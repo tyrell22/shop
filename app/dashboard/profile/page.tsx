@@ -1,0 +1,270 @@
+"use client"
+
+import type React from "react"
+
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { useToast } from "@/components/ui/use-toast"
+import { SiteHeader } from "@/components/site-header"
+
+type User = {
+  id: number
+  name: string
+  email: string
+}
+
+export default function ProfilePage() {
+  const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [currentPassword, setCurrentPassword] = useState("")
+  const [newPassword, setNewPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [passwordError, setPasswordError] = useState("")
+  const [isSaving, setIsSaving] = useState(false)
+  const [isChangingPassword, setIsChangingPassword] = useState(false)
+  const router = useRouter()
+  const { toast } = useToast()
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const response = await fetch("/api/user/profile")
+        const data = await response.json()
+
+        if (data.success) {
+          setUser(data.user)
+          setName(data.user.name)
+          setEmail(data.user.email)
+        } else {
+          // If API fails, redirect to login
+          router.push("/login")
+        }
+      } catch (error) {
+        console.error("Error fetching user profile:", error)
+        router.push("/login")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchUserProfile()
+  }, [router])
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSaving(true)
+
+    try {
+      const response = await fetch("/api/user/profile", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, email }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setUser(data.user)
+        toast({
+          title: "Profile Updated",
+          description: "Your profile has been updated successfully.",
+        })
+      } else {
+        toast({
+          title: "Update Failed",
+          description: data.message || "Failed to update profile.",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Update Failed",
+        description: "An error occurred while updating your profile.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    // Validate passwords match
+    if (newPassword !== confirmPassword) {
+      setPasswordError("New passwords do not match")
+      return
+    }
+
+    setPasswordError("")
+    setIsChangingPassword(true)
+
+    try {
+      const response = await fetch("/api/user/change-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        toast({
+          title: "Password Changed",
+          description: "Your password has been changed successfully.",
+        })
+        setCurrentPassword("")
+        setNewPassword("")
+        setConfirmPassword("")
+      } else {
+        toast({
+          title: "Password Change Failed",
+          description: data.message || "Failed to change password.",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Password Change Failed",
+        description: "An error occurred while changing your password.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsChangingPassword(false)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-black">
+        <div className="text-yellow-400">Loading profile...</div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex min-h-screen flex-col bg-black">
+      <SiteHeader />
+      <div className="container mx-auto py-6 px-4 md:px-6">
+        <h1 className="text-2xl font-bold text-yellow-400 mb-6">My Profile</h1>
+
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card className="border-2 border-yellow-400 bg-gray-900">
+            <CardHeader>
+              <CardTitle className="text-yellow-400">Profile Information</CardTitle>
+              <CardDescription className="text-gray-400">Update your account details</CardDescription>
+            </CardHeader>
+            <form onSubmit={handleUpdateProfile}>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-gray-200">
+                    Full Name
+                  </Label>
+                  <Input
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="border-gray-700 bg-gray-800 text-white"
+                    disabled={isSaving}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-gray-200">
+                    Email
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="border-gray-700 bg-gray-800 text-white"
+                    disabled={isSaving}
+                  />
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button type="submit" className="bg-yellow-400 text-black hover:bg-yellow-300" disabled={isSaving}>
+                  {isSaving ? "Saving..." : "Save Changes"}
+                </Button>
+              </CardFooter>
+            </form>
+          </Card>
+
+          <Card className="border-2 border-yellow-400 bg-gray-900">
+            <CardHeader>
+              <CardTitle className="text-yellow-400">Change Password</CardTitle>
+              <CardDescription className="text-gray-400">Update your password</CardDescription>
+            </CardHeader>
+            <form onSubmit={handleChangePassword}>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="current-password" className="text-gray-200">
+                    Current Password
+                  </Label>
+                  <Input
+                    id="current-password"
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className="border-gray-700 bg-gray-800 text-white"
+                    disabled={isChangingPassword}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new-password" className="text-gray-200">
+                    New Password
+                  </Label>
+                  <Input
+                    id="new-password"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="border-gray-700 bg-gray-800 text-white"
+                    disabled={isChangingPassword}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-password" className="text-gray-200">
+                    Confirm New Password
+                  </Label>
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className={`border-gray-700 bg-gray-800 text-white ${passwordError ? "border-red-500" : ""}`}
+                    disabled={isChangingPassword}
+                    required
+                  />
+                  {passwordError && <p className="text-red-500 text-sm mt-1">{passwordError}</p>}
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button
+                  type="submit"
+                  className="bg-yellow-400 text-black hover:bg-yellow-300"
+                  disabled={isChangingPassword}
+                >
+                  {isChangingPassword ? "Changing Password..." : "Change Password"}
+                </Button>
+              </CardFooter>
+            </form>
+          </Card>
+        </div>
+      </div>
+    </div>
+  )
+}
+
