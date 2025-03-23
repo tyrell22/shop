@@ -174,8 +174,8 @@ export default function AdminDashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-white">
-                  ${stats?.totalRevenue ? stats.totalRevenue.toFixed(2) : "0.00"}
-                </div>
+  ${stats?.totalRevenue ? Number(stats.totalRevenue).toFixed(2) : "0.00"}
+</div>
               </CardContent>
             </Card>
             <Card className="border-2 border-yellow-400 bg-gray-900">
