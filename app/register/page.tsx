@@ -36,7 +36,7 @@ export default function RegisterPage() {
           router.push("/dashboard")
         }
       } catch (error) {
-        // Not logged in, stay on register page
+        // Not logged in, stay on register pagee
         console.error("Auth check error:", error)
       }
     }
