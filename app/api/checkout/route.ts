@@ -5,7 +5,7 @@ import { getProductById } from "@/lib/product-service";
 import { verify } from "jsonwebtoken";
 import { cookies } from "next/headers";
 import { addDays } from "date-fns";
-import { generateOrderConfirmationEmail, sendEmail } from "@/lib/email"; // Import email utils
+import { generateOrderConfirmationEmail, sendEmail } from "@/lib/email-service"; // Import email utils
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
