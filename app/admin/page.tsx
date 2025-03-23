@@ -4,12 +4,13 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Package, Users, CreditCard, Settings, Loader2, Edit, Trash2 } from "lucide-react"; // Add Trash2
+import { Package, Users, CreditCard, Settings, Loader2, Edit, Trash2 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { useToast } from "@/components/ui/use-toast";
 import { format } from "date-fns";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Input } from "@/components/ui/input";
+import { sendEmail, generateM3uUpdateEmail } from "@/lib/email-service"; // Add import
 
 type DashboardStats = {
   totalUsers: number;
@@ -103,6 +104,7 @@ export default function AdminDashboardPage() {
       const data = await response.json();
 
       if (data.success) {
+        const updatedSubscription = data.subscription;
         setStats((prev) =>
           prev
             ? {
@@ -114,6 +116,34 @@ export default function AdminDashboardPage() {
             : prev
         );
         toast({ title: "Success", description: "M3U URL updated successfully" });
+
+        // Find the subscription and user details for email
+        const subscription = stats?.activeSubscriptionsList.find((sub) => sub.id === selectedSubscriptionId);
+        if (subscription) {
+          const user = await getUserById(subscription.user_id);
+          const product = await getProductById(subscription.product_id);
+
+          if (user && product) {
+            const emailTemplate = generateM3uUpdateEmail(user.name, {
+              subscriptionId: subscription.id,
+              productName: product.name,
+              startDate: new Date(subscription.start_date),
+              endDate: new Date(subscription.end_date),
+              m3uUrl,
+            });
+            const emailResult = await sendEmail(user.email, emailTemplate);
+            if (!emailResult.success) {
+              console.error("Email failed:", emailResult.message, emailResult.error);
+              toast({
+                title: "Email Warning",
+                description: "M3U URL updated, but email failed to send.",
+                variant: "destructive",
+              });
+            } else {
+              console.log("M3U update email sent to:", user.email);
+            }
+          }
+        }
       } else {
         toast({ title: "Error", description: data.message || "Failed to update M3U URL", variant: "destructive" });
       }
