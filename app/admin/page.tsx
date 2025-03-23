@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Package, Users, CreditCard, Settings, Loader2, Edit } from "lucide-react";
+import { Package, Users, CreditCard, Settings, Loader2, Edit, Trash2 } from "lucide-react"; // Add Trash2
 import { SiteHeader } from "@/components/site-header";
 import { useToast } from "@/components/ui/use-toast";
 import { format } from "date-fns";
@@ -14,11 +14,11 @@ import { Input } from "@/components/ui/input";
 type DashboardStats = {
   totalUsers: number;
   activeSubscriptions: number;
-  totalRevenue: number | string; // Allow string from DB
+  totalRevenue: number | string;
   totalProducts: number;
   recentOrders: {
     id: number;
-    total_amount: number;
+    total_amount: number | string;
     status: string;
     created_at: string;
     user_name: string;
@@ -124,6 +124,37 @@ export default function AdminDashboardPage() {
       setDialogOpen(false);
       setM3uUrl("");
       setSelectedSubscriptionId(null);
+    }
+  };
+
+  const handleCancelSubscription = async (subscriptionId: number) => {
+    try {
+      const response = await fetch("/api/subscriptions/cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subscriptionId }),
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        setStats((prev) =>
+          prev
+            ? {
+                ...prev,
+                activeSubscriptionsList: prev.activeSubscriptionsList.map((sub) =>
+                  sub.id === subscriptionId ? { ...sub, status: "canceled" } : sub
+                ),
+                activeSubscriptions: prev.activeSubscriptions - 1,
+              }
+            : prev
+        );
+        toast({ title: "Success", description: "Subscription canceled successfully" });
+      } else {
+        toast({ title: "Error", description: data.message || "Failed to cancel subscription", variant: "destructive" });
+      }
+    } catch (error) {
+      console.error("Error canceling subscription:", error);
+      toast({ title: "Error", description: "Failed to cancel subscription", variant: "destructive" });
     }
   };
 
@@ -237,7 +268,7 @@ export default function AdminDashboardPage() {
                           <p className="text-xs text-gray-500">{format(new Date(order.created_at), "MMM dd, yyyy")}</p>
                         </div>
                         <div className="text-right">
-                          <p className="font-medium text-yellow-400">${order.total_amount.toFixed(2)}</p>
+                          <p className="font-medium text-yellow-400">${Number(order.total_amount).toFixed(2)}</p>
                           <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
                             {order.status}
                           </span>
@@ -272,19 +303,31 @@ export default function AdminDashboardPage() {
                           </p>
                           {sub.m3u_url && <p className="text-xs text-gray-600 truncate">M3U: {sub.m3u_url}</p>}
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black"
-                          onClick={() => {
-                            setSelectedSubscriptionId(sub.id);
-                            setM3uUrl(sub.m3u_url || "");
-                            setDialogOpen(true);
-                          }}
-                        >
-                          <Edit className="mr-2 h-4 w-4" />
-                          Update Details
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black"
+                            onClick={() => {
+                              setSelectedSubscriptionId(sub.id);
+                              setM3uUrl(sub.m3u_url || "");
+                              setDialogOpen(true);
+                            }}
+                          >
+                            <Edit className="mr-2 h-4 w-4" />
+                            Update Details
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-red-400 text-red-400 hover:bg-red-400 hover:text-black"
+                            onClick={() => handleCancelSubscription(sub.id)}
+                            disabled={sub.status === "canceled"}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Cancel
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
