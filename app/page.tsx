@@ -1,16 +1,19 @@
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Tv } from "lucide-react"
-import { SiteHeader } from "@/components/site-header"
-import { SiteFooter } from "@/components/site-footer"
-import { getProducts } from "@/lib/product-service"
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Tv } from "lucide-react";
+import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
+import { getProducts } from "@/lib/product-service";
 
 export default async function Home() {
-  // Fetch actual products from the database
-  const products = await getProducts()
+  let products = [];
+  try {
+    products = await getProducts();
+  } catch (error) {
+    console.error("Failed to fetch products:", error);
+  }
 
-  // Get the first 3 products or use empty array if none exist
-  const featuredProducts = products.slice(0, 3)
+  const featuredProducts = products.slice(0, 3);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -66,82 +69,25 @@ export default async function Home() {
               </div>
             </div>
             <div className="grid grid-cols-1 gap-6 mt-8 md:grid-cols-3">
-              {featuredProducts.length > 0
-                ? featuredProducts.map((product) => (
-                    <div key={product.id} className="flex flex-col p-6 bg-black rounded-lg border-2 border-yellow-400">
-                      <div className="mb-4">
-                        <h3 className="text-xl font-bold text-yellow-400">{product.name}</h3>
-                        <div className="mt-2 text-3xl font-bold text-white">
-                          ${typeof product.price === "number" ? product.price.toFixed(2) : "0.00"}
-                          <span className="text-sm font-normal text-gray-400">
-                            {product.duration_days === 30
-                              ? "/month"
-                              : product.duration_days === 365
-                                ? "/year"
-                                : `/${product.duration_days} days`}
-                          </span>
-                        </div>
+              {featuredProducts.length > 0 ? (
+                featuredProducts.map((product) => (
+                  <div key={product.id} className="flex flex-col p-6 bg-black rounded-lg border-2 border-yellow-400">
+                    <div className="mb-4">
+                      <h3 className="text-xl font-bold text-yellow-400">{product.name}</h3>
+                      <div className="mt-2 text-3xl font-bold text-white">
+                        ${typeof product.price === "number" ? product.price.toFixed(2) : "0.00"}
+                        <span className="text-sm font-normal text-gray-400">
+                          {product.duration_days === 30
+                            ? "/month"
+                            : product.duration_days === 365
+                              ? "/year"
+                              : `/${product.duration_days} days`}
+                        </span>
                       </div>
-                      <ul className="flex-1 mb-6 space-y-2">
-                        {Array.isArray(product.features) &&
-                          product.features.map((feature) => (
-                            <li key={feature} className="flex items-center text-gray-300">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 20 20"
-                                fill="currentColor"
-                                className="w-5 h-5 mr-2 text-yellow-400"
-                              >
-                                <path
-                                  fillRule="evenodd"
-                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                  clipRule="evenodd"
-                                />
-                              </svg>
-                              {feature}
-                            </li>
-                          ))}
-                      </ul>
-                      <Link href={`/checkout?productId=${product.id}`}>
-                        <Button className="bg-yellow-400 text-black hover:bg-yellow-300 w-full">Subscribe Now</Button>
-                      </Link>
                     </div>
-                  ))
-                : // Fallback if no products are available
-                  [
-                    {
-                      name: "Basic",
-                      price: "$9.99",
-                      features: ["1000+ Channels", "HD Quality", "24/7 Support", "1 Device"],
-                    },
-                    {
-                      name: "Standard",
-                      price: "$14.99",
-                      features: ["2000+ Channels", "HD & FHD Quality", "24/7 Support", "2 Devices", "VOD Access"],
-                    },
-                    {
-                      name: "Premium",
-                      price: "$19.99",
-                      features: [
-                        "3000+ Channels",
-                        "HD, FHD & 4K Quality",
-                        "24/7 Priority Support",
-                        "4 Devices",
-                        "VOD & Series Access",
-                        "PPV Events",
-                      ],
-                    },
-                  ].map((pkg) => (
-                    <div key={pkg.name} className="flex flex-col p-6 bg-black rounded-lg border-2 border-yellow-400">
-                      <div className="mb-4">
-                        <h3 className="text-xl font-bold text-yellow-400">{pkg.name}</h3>
-                        <div className="mt-2 text-3xl font-bold text-white">
-                          {pkg.price}
-                          <span className="text-sm font-normal text-gray-400">/month</span>
-                        </div>
-                      </div>
-                      <ul className="flex-1 mb-6 space-y-2">
-                        {pkg.features.map((feature) => (
+                    <ul className="flex-1 mb-6 space-y-2">
+                      {Array.isArray(product.features) && product.features.length > 0 ? (
+                        product.features.map((feature) => (
                           <li key={feature} className="flex items-center text-gray-300">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -157,19 +103,24 @@ export default async function Home() {
                             </svg>
                             {feature}
                           </li>
-                        ))}
-                      </ul>
-                      <Link href="/packages">
-                        <Button className="bg-yellow-400 text-black hover:bg-yellow-300 w-full">Subscribe Now</Button>
-                      </Link>
-                    </div>
-                  ))}
+                        ))
+                      ) : (
+                        <li className="text-gray-300">No features listed</li>
+                      )}
+                    </ul>
+                    <Link href={`/checkout?productId=${product.id}`}>
+                      <Button className="bg-yellow-400 text-black hover:bg-yellow-300 w-full">Subscribe Now</Button>
+                    </Link>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-300 col-span-full text-center">No products available. Please check back later.</p>
+              )}
             </div>
           </div>
         </section>
       </main>
       <SiteFooter />
     </div>
-  )
+  );
 }
-
