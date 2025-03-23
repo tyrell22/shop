@@ -469,6 +469,113 @@ export const generateWelcomeEmail = (customerName: string) => {
   }
 }
 
+// New generateM3uUpdateEmail function
+export const generateM3uUpdateEmail = (
+  customerName: string,
+  subscriptionDetails: {
+    subscriptionId: number;
+    productName: string;
+    startDate: Date;
+    endDate: Date;
+    m3uUrl: string;
+  }
+) => {
+  const startDateFormatted = new Date(subscriptionDetails.startDate).toLocaleDateString();
+  const endDateFormatted = new Date(subscriptionDetails.endDate).toLocaleDateString();
+
+  return {
+    subject: `Crisp TV - Subscription #${subscriptionDetails.subscriptionId} Updated`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Subscription Update</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              line-height: 1.6;
+              color: #f5f5f5;
+              background-color: #000000;
+              margin: 0;
+              padding: 0;
+            }
+            .container {
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .header {
+              text-align: center;
+              padding: 20px 0;
+              border-bottom: 2px solid #FACC15;
+            }
+            .logo {
+              color: #FACC15;
+              font-size: 24px;
+              font-weight: bold;
+            }
+            .content {
+              padding: 20px 0;
+            }
+            .footer {
+              text-align: center;
+              padding: 20px 0;
+              border-top: 1px solid #333;
+              font-size: 12px;
+              color: #999;
+            }
+            h1 {
+              color: #FACC15;
+            }
+            .details {
+              background-color: #111111;
+              border: 1px solid #333;
+              border-radius: 5px;
+              padding: 15px;
+              margin: 20px 0;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <div class="logo">Crisp TV</div>
+            </div>
+            <div class="content">
+              <h1>Subscription Updated</h1>
+              <p>Hello ${customerName},</p>
+              <p>Your Crisp TV subscription has been updated with new streaming details.</p>
+              <div class="details">
+                <p><strong>Subscription ID:</strong> #${subscriptionDetails.subscriptionId}</p>
+                <p><strong>Package:</strong> ${subscriptionDetails.productName}</p>
+                <p><strong>Period:</strong> ${startDateFormatted} to ${endDateFormatted}</p>
+                <p><strong>M3U URL:</strong> ${subscriptionDetails.m3uUrl}</p>
+              </div>
+              <p>Use the M3U URL above to access your IPTV streams. If you have any issues, contact support.</p>
+            </div>
+            <div class="footer">
+              <p>© ${new Date().getFullYear()} Crisp TV. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+    text: `
+      Crisp TV - Subscription #${subscriptionDetails.subscriptionId} Updated
+      Hello ${customerName},
+      Your Crisp TV subscription has been updated with new streaming details.
+      Subscription ID: #${subscriptionDetails.subscriptionId}
+      Package: ${subscriptionDetails.productName}
+      Period: ${startDateFormatted} to ${endDateFormatted}
+      M3U URL: ${subscriptionDetails.m3uUrl}
+      Use the M3U URL above to access your IPTV streams. Contact support for issues.
+      © ${new Date().getFullYear()} Crisp TV. All rights reserved.
+    `,
+  }
+}
+
 // Function to send email
 export const sendEmail = async (
   to: string,
