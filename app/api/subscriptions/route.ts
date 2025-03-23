@@ -3,11 +3,15 @@ import {
   getUserSubscriptions,
   getActiveUserSubscriptions,
   getExpiredUserSubscriptions,
+  debugUserSubscriptions,
 } from "@/lib/subscription-service"
 import { verify } from "jsonwebtoken"
 import { cookies } from "next/headers"
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key"
+
+console.log("Fetching subscriptions for user ID:", decoded.id);
+await debugUserSubscriptions(decoded.id);
 
 export async function GET(request: NextRequest) {
   try {
