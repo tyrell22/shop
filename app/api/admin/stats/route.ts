@@ -30,11 +30,14 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       stats: {
-        totalUsers: stats.rows[0].total_users,
-        activeSubscriptions: stats.rows[0].active_subscriptions,
-        totalRevenue: stats.rows[0].total_revenue,
-        totalProducts: stats.rows[0].total_products,
-        recentOrders: recentOrders.rows,
+        totalUsers: Number(stats.rows[0].total_users),
+        activeSubscriptions: Number(stats.rows[0].active_subscriptions),
+        totalRevenue: Number(stats.rows[0].total_revenue), // Ensure number
+        totalProducts: Number(stats.rows[0].total_products),
+        recentOrders: recentOrders.rows.map((order) => ({
+          ...order,
+          total_amount: Number(order.total_amount), // Ensure number
+        })),
         activeSubscriptionsList: activeSubscriptionsList.rows,
       },
     });
