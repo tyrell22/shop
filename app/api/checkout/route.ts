@@ -6,18 +6,16 @@ import { verify } from "jsonwebtoken";
 import { cookies } from "next/headers";
 import { addDays } from "date-fns";
 import { generateOrderConfirmationEmail, sendEmail } from "@/lib/email-service";
-import { query } from "@/lib/db";
+import { sql } from "@vercel/postgres"; // Import sql directly
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
 export async function POST(request: NextRequest) {
   console.log("Checkout request received");
-  const client = await query("BEGIN");
 
   try {
     const token = cookies().get("auth_token")?.value;
     if (!token) {
-      await query("ROLLBACK");
       return NextResponse.json({ success: false, message: "Not authenticated" }, { status: 401 });
     }
 
@@ -27,7 +25,6 @@ export async function POST(request: NextRequest) {
     const { productId, paymentMethod } = await request.json();
     console.log("Request body:", { productId, paymentMethod });
     if (!productId || !paymentMethod) {
-      await query("ROLLBACK");
       return NextResponse.json(
         { success: false, message: "Product ID and payment method are required" },
         { status: 400 }
@@ -36,33 +33,49 @@ export async function POST(request: NextRequest) {
 
     const product = await getProductById(productId);
     if (!product) {
-      await query("ROLLBACK");
       return NextResponse.json({ success: false, message: "Product not found" }, { status: 404 });
     }
     console.log("Product:", product);
 
-    const order = await createOrder(decoded.id, product.price, "completed", paymentMethod);
-    console.log("Order created:", order);
+    // Run all database operations in a transaction
+    const result = await sql.transaction(async (tx) => {
+      const orderResult = await tx.query(
+        "INSERT INTO orders (user_id, total_amount, status, payment_method) VALUES ($1, $2, $3, $4) RETURNING *",
+        [decoded.id, product.price, "completed", paymentMethod]
+      );
+      const order = orderResult.rows[0];
+      console.log("Order created:", order);
 
-    const orderItem = await addOrderItem(order.id, product.id, 1, product.price);
-    console.log("Order item added:", orderItem);
+      const orderItemResult = await tx.query(
+        "INSERT INTO order_items (order_id, product_id, quantity, price) VALUES ($1, $2, $3, $4) RETURNING *",
+        [order.id, product.id, 1, product.price]
+      );
+      const orderItem = orderItemResult.rows[0];
+      console.log("Order item added:", orderItem);
 
-    const startDate = new Date();
-    const endDate = addDays(startDate, product.duration_days);
-    console.log("Subscription dates:", { startDate, endDate });
-    const subscription = await createSubscription(decoded.id, product.id, startDate, endDate, "active");
-    console.log("Subscription created:", subscription);
+      const startDate = new Date();
+      const endDate = addDays(startDate, product.duration_days);
+      console.log("Subscription dates:", { startDate, endDate });
+      const subscriptionResult = await tx.query(
+        "INSERT INTO subscriptions (user_id, product_id, start_date, end_date, status) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+        [decoded.id, product.id, startDate, endDate, "active"]
+      );
+      const subscription = subscriptionResult.rows[0];
+      console.log("Subscription created:", subscription);
 
-    await query("COMMIT");
+      return { order, subscription };
+    });
+
     console.log("Transaction committed");
 
+    // Send confirmation email after transaction
     const emailTemplate = generateOrderConfirmationEmail(decoded.name, {
-      orderId: order.id,
+      orderId: result.order.id,
       productName: product.name,
       price: product.price,
       duration: product.duration_days,
-      startDate,
-      endDate,
+      startDate: new Date(result.subscription.start_date),
+      endDate: new Date(result.subscription.end_date),
     });
     console.log("Sending email to:", decoded.email);
     const emailResult = await sendEmail(decoded.email, emailTemplate);
@@ -74,12 +87,11 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      order,
-      subscription,
+      order: result.order,
+      subscription: result.subscription,
     });
   } catch (error) {
     console.error("Checkout error:", error);
-    await query("ROLLBACK");
     return NextResponse.json(
       { success: false, message: "Failed to process checkout", error: String(error) },
       { status: 500 }
