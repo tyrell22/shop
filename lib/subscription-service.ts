@@ -13,11 +13,6 @@ export type Subscription = {
   product_price?: number
 }
 
-  export async function debugUserSubscriptions(userId: number): Promise<any> {
-  const result = await query("SELECT * FROM subscriptions WHERE user_id = $1", [userId]);
-  console.log("Raw subscriptions for user", userId, ":", result.rows);
-  return result.rows;
-}
 
 export async function createSubscription(
   userId: number,
