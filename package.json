@@ -64,6 +64,7 @@
     "@vercel/postgres": "latest",
     "@stripe/stripe-js": "latest",
     "@sendgrid/mail": "latest"
+    "pg": "^8.11.3"
   },
   "devDependencies": {
     "@types/node": "^22",
