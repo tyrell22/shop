@@ -4,7 +4,7 @@ export async function POST(request: NextRequest) {
   try {
     const { username, password } = await request.json();
 
-    const lionOttResponse = await fetch("https://bqpanel.com/api/create-subscription", {
+    const lionOttResponse = await fetch("https://bqpanel.com/create-subscription", {
       method: "POST",
       headers: {
         "API-Key": process.env.LION_OTT_API_KEY, // Ensure this is set in Vercel
