@@ -15,6 +15,7 @@ export async function middleware(request: NextRequest) {
     path === "/register" ||
     path.startsWith("/api/auth") ||
     path.startsWith("/api/init-db") ||
+    path.startsWith("/api/webhooks/stripe") ||
     path.startsWith("/packages") ||
     path.startsWith("/features") ||
     path.startsWith("/support") ||
