@@ -1,6 +1,6 @@
-let userConfig = undefined
+let userConfig;
 try {
-  userConfig = await import('./v0-user-next.config')
+  userConfig = await import('./v0-user-next.config');
 } catch (e) {
   // ignore error
 }
@@ -21,28 +21,34 @@ const nextConfig = {
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
   },
-}
-
-mergeConfig(nextConfig, userConfig)
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Set 'fs' to false on the client-side to avoid compilation errors
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+      };
+    }
+    return config;
+  },
+};
 
 function mergeConfig(nextConfig, userConfig) {
   if (!userConfig) {
-    return
+    return nextConfig; // Return nextConfig instead of undefined
   }
 
   for (const key in userConfig) {
-    if (
-      typeof nextConfig[key] === 'object' &&
-      !Array.isArray(nextConfig[key])
-    ) {
+    if (typeof nextConfig[key] === 'object' && !Array.isArray(nextConfig[key])) {
       nextConfig[key] = {
         ...nextConfig[key],
         ...userConfig[key],
-      }
+      };
     } else {
-      nextConfig[key] = userConfig[key]
+      nextConfig[key] = userConfig[key];
     }
   }
+  return nextConfig;
 }
 
-export default nextConfig
+export default mergeConfig(nextConfig, userConfig?.default);
