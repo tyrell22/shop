@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Package, CreditCard, Settings, User } from "lucide-react"
+import { Package, CreditCard, Settings, User, LogOut } from "lucide-react" // Added LogOut icon
 import Link from "next/link"
 import { useToast } from "@/components/ui/use-toast"
 import { format } from "date-fns"
@@ -38,30 +38,19 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        // Fetch user profile
         const profileResponse = await fetch("/api/user/profile")
         const profileData = await profileResponse.json()
 
         if (profileData.success) {
           setUser(profileData.user)
-
-          // Fetch active subscriptions
           const activeResponse = await fetch("/api/subscriptions?filter=active")
           const activeData = await activeResponse.json()
+          if (activeData.success) setActiveSubscriptions(activeData.subscriptions)
 
-          if (activeData.success) {
-            setActiveSubscriptions(activeData.subscriptions)
-          }
-
-          // Fetch expired subscriptions
           const expiredResponse = await fetch("/api/subscriptions?filter=expired")
           const expiredData = await expiredResponse.json()
-
-          if (expiredData.success) {
-            setExpiredSubscriptions(expiredData.subscriptions)
-          }
+          if (expiredData.success) setExpiredSubscriptions(expiredData.subscriptions)
         } else {
-          // If not authenticated, redirect to login
           router.push("/login")
         }
       } catch (error) {
@@ -149,6 +138,13 @@ export default function DashboardPage() {
               <Settings className="h-4 w-4" />
               Settings
             </Link>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-400 hover:text-yellow-400"
+            >
+              <LogOut className="h-4 w-4" />
+              Logout
+            </button>
           </nav>
         </aside>
         <main className="flex w-full flex-col overflow-hidden p-4 md:p-0">
@@ -258,4 +254,3 @@ export default function DashboardPage() {
     </div>
   )
 }
-
