@@ -47,7 +47,7 @@ export async function getActiveUserSubscriptions(userId: number): Promise<Subscr
     `SELECT s.*, p.name as product_name, p.price as product_price 
      FROM subscriptions s 
      JOIN products p ON s.product_id = p.id 
-     WHERE s.user_id = $1 AND s.status = 'active' AND s.end_date > NOW() 
+     WHERE s.user_id = $1
      ORDER BY s.end_date DESC`,
     [userId],
   )
