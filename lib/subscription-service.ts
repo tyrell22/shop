@@ -101,6 +101,11 @@ export async function renewSubscription(id: number, newEndDate: Date): Promise<S
   if (result.rows.length === 0) {
     return null
   }
+  export async function debugUserSubscriptions(userId: number): Promise<any> {
+  const result = await query("SELECT * FROM subscriptions WHERE user_id = $1", [userId]);
+  console.log("Raw subscriptions for user", userId, ":", result.rows);
+  return result.rows;
+}
 
   return result.rows[0]
 }
