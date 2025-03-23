@@ -1,79 +1,131 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Package, Users, CreditCard, Settings, Loader2 } from "lucide-react"
-import { SiteHeader } from "@/components/site-header"
-import { useToast } from "@/components/ui/use-toast"
-import { format } from "date-fns"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Package, Users, CreditCard, Settings, Loader2, Edit } from "lucide-react";
+import { SiteHeader } from "@/components/site-header";
+import { useToast } from "@/components/ui/use-toast";
+import { format } from "date-fns";
+import * as Dialog from "@radix-ui/react-dialog";
+import { Input } from "@/components/ui/input";
 
 type DashboardStats = {
-  totalUsers: number
-  activeSubscriptions: number
-  totalRevenue: number
-  totalProducts: number
+  totalUsers: number;
+  activeSubscriptions: number;
+  totalRevenue: number;
+  totalProducts: number;
   recentOrders: {
-    id: number
-    total_amount: number
-    status: string
-    created_at: string
-    user_name: string
-    user_email: string
-  }[]
-}
+    id: number;
+    total_amount: number;
+    status: string;
+    created_at: string;
+    user_name: string;
+    user_email: string;
+  }[];
+  activeSubscriptionsList: {
+    id: number;
+    user_id: number;
+    product_id: number;
+    start_date: string;
+    end_date: string;
+    status: string;
+    user_name: string;
+    product_name: string;
+    m3u_url?: string;
+  }[];
+};
 
 export default function AdminDashboardPage() {
-  const [stats, setStats] = useState<DashboardStats | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const { toast } = useToast()
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedSubscriptionId, setSelectedSubscriptionId] = useState<number | null>(null);
+  const [m3uUrl, setM3uUrl] = useState("");
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await fetch("/api/admin/stats")
-        const data = await response.json()
+        const response = await fetch("/api/admin/stats");
+        const data = await response.json();
 
         if (data.success) {
-          setStats(data.stats)
+          setStats(data.stats);
         } else {
           toast({
             title: "Error",
             description: data.message || "Failed to fetch dashboard statistics",
             variant: "destructive",
-          })
-          // Set default stats
+          });
           setStats({
             totalUsers: 0,
             activeSubscriptions: 0,
             totalRevenue: 0,
             totalProducts: 0,
             recentOrders: [],
-          })
+            activeSubscriptionsList: [],
+          });
         }
       } catch (error) {
-        console.error("Error fetching dashboard stats:", error)
+        console.error("Error fetching dashboard stats:", error);
         toast({
           title: "Error",
           description: "Failed to fetch dashboard statistics",
           variant: "destructive",
-        })
-        // Set default stats
+        });
         setStats({
           totalUsers: 0,
           activeSubscriptions: 0,
           totalRevenue: 0,
           totalProducts: 0,
           recentOrders: [],
-        })
+          activeSubscriptionsList: [],
+        });
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    fetchStats()
-  }, [toast])
+    fetchStats();
+  }, [toast]);
+
+  const handleUpdateM3uUrl = async () => {
+    if (!selectedSubscriptionId || !m3uUrl) return;
+
+    try {
+      const response = await fetch("/api/admin/subscriptions/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subscriptionId: selectedSubscriptionId, m3uUrl }),
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        setStats((prev) =>
+          prev
+            ? {
+                ...prev,
+                activeSubscriptionsList: prev.activeSubscriptionsList.map((sub) =>
+                  sub.id === selectedSubscriptionId ? { ...sub, m3u_url: m3uUrl } : sub
+                ),
+              }
+            : prev
+        );
+        toast({ title: "Success", description: "M3U URL updated successfully" });
+      } else {
+        toast({ title: "Error", description: data.message || "Failed to update M3U URL", variant: "destructive" });
+      }
+    } catch (error) {
+      console.error("Error updating M3U URL:", error);
+      toast({ title: "Error", description: "Failed to update M3U URL", variant: "destructive" });
+    } finally {
+      setDialogOpen(false);
+      setM3uUrl("");
+      setSelectedSubscriptionId(null);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -86,7 +138,7 @@ export default function AdminDashboardPage() {
           </div>
         </main>
       </div>
-    )
+    );
   }
 
   return (
@@ -200,10 +252,86 @@ export default function AdminDashboardPage() {
                 )}
               </CardContent>
             </Card>
+
+            <Card className="border-2 border-yellow-400 bg-gray-900 md:col-span-2">
+              <CardHeader>
+                <CardTitle className="text-yellow-400">Active Subscriptions</CardTitle>
+                <CardDescription className="text-gray-400">Manage current subscriptions</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {stats?.activeSubscriptionsList && stats.activeSubscriptionsList.length > 0 ? (
+                  <div className="space-y-4">
+                    {stats.activeSubscriptionsList.map((sub) => (
+                      <div key={sub.id} className="flex justify-between items-center border-b border-gray-800 pb-2">
+                        <div>
+                          <p className="font-medium text-white">Subscription #{sub.id}</p>
+                          <p className="text-sm text-gray-400">{sub.user_name} - {sub.product_name}</p>
+                          <p className="text-xs text-gray-500">
+                            {format(new Date(sub.start_date), "MMM dd, yyyy")} -{" "}
+                            {format(new Date(sub.end_date), "MMM dd, yyyy")}
+                          </p>
+                          {sub.m3u_url && <p className="text-xs text-gray-600 truncate">M3U: {sub.m3u_url}</p>}
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black"
+                          onClick={() => {
+                            setSelectedSubscriptionId(sub.id);
+                            setM3uUrl(sub.m3u_url || "");
+                            setDialogOpen(true);
+                          }}
+                        >
+                          <Edit className="mr-2 h-4 w-4" />
+                          Update Details
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-md border border-gray-800 p-4">
+                    <div className="text-center text-gray-400">No active subscriptions to display.</div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
       </main>
-    </div>
-  )
-}
 
+      <Dialog.Root open={dialogOpen} onOpenChange={setDialogOpen}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 bg-black/50" />
+          <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gray-900 border-2 border-yellow-400 p-6 rounded-lg w-full max-w-md">
+            <Dialog.Title className="text-yellow-400 text-xl font-bold">Update Subscription Details</Dialog.Title>
+            <Dialog.Description className="text-gray-400 mt-2">
+              Enter the M3U URL for Subscription #{selectedSubscriptionId}.
+            </Dialog.Description>
+            <div className="mt-4">
+              <Input
+                value={m3uUrl}
+                onChange={(e) => setM3uUrl(e.target.value)}
+                placeholder="Enter M3U URL"
+                className="bg-black text-white border-gray-700 focus:border-yellow-400"
+              />
+            </div>
+            <div className="mt-6 flex justify-end gap-2">
+              <Dialog.Close asChild>
+                <Button variant="outline" className="border-gray-700 text-gray-400 hover:bg-gray-800">
+                  Cancel
+                </Button>
+              </Dialog.Close>
+              <Button
+                onClick={handleUpdateM3uUrl}
+                className="bg-yellow-400 text-black hover:bg-yellow-300"
+                disabled={!m3uUrl}
+              >
+                Save
+              </Button>
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+    </div>
+  );
+}
