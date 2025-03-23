@@ -140,12 +140,12 @@ export default function DashboardPage() {
               <Settings className="h-4 w-4" />
               Settings
             </Link>
-            <Button
+            <Link
               onClick={handleLogout}
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-400 hover:text-yellow-400 bg-transparent border-none"
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-400 hover:text-yellow-400"
             >
               Logout
-            </Button>
+            </Link>
           </nav>
         </aside>
         <main className="flex w-full flex-col overflow-hidden p-4 md:p-0">
