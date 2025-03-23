@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
     // Calculate subscription dates
     const startDate = new Date();
     const endDate = addDays(startDate, product.duration_days);
+    console.log("Subscription dates:", { startDate, endDate });
 
     // Create the subscription
     const subscription = await createSubscription(decoded.id, product.id, startDate, endDate, "active");
