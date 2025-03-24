@@ -16,7 +16,7 @@ export default function SocialsPage() {
                 <ChevronLeft className="mr-2 h-4 w-4" />
                 Back to Home
               </Link>
-            </div>>
+            </div>
             
             <div className="flex flex-col items-center justify-center space-y-10 text-center max-w-3xl mx-auto">
               <div className="space-y-4">
@@ -27,13 +27,6 @@ export default function SocialsPage() {
                   We're currently working on establishing our social media presence to better connect with our community.
                 </p>
               </div>
-            </div>
-          </div>
-        </section>
-      </main>
-      <SiteFooter />
-    </div>
-              
               
               <div className="bg-gray-900 p-8 rounded-lg border-2 border-yellow-400 w-full">
                 <div className="flex items-center justify-center mb-6">
@@ -93,4 +86,12 @@ export default function SocialsPage() {
                 <p className="text-gray-300">
                   In the meantime, you can always reach us through our <Link href="/support" className="text-yellow-400 hover:underline">support page</Link>.
                 </p>
-                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+      <SiteFooter />
+    </div>
+  );
+}
