@@ -21,6 +21,9 @@ export async function middleware(request: NextRequest) {
     path.startsWith("/packages") ||
     path.startsWith("/features") ||
     path.startsWith("/support") ||
+    path.startsWith("/about") ||
+    path.startsWith("/terms-privacy") ||
+    path.startsWith("/socials") ||
     path.startsWith("/public/images") ||
     path.startsWith("/_next") ||
     path === "/api/admin/login" || // Allow access to admin login
