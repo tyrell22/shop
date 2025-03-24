@@ -146,12 +146,12 @@ export default function PackagesPage() {
   }
 
   const handleSubscribe = (productId: number) => {
-    if (!isAuthenticated) {
-      toast({
-        title: "Login Required",
-        description: "Please log in or sign up to subscribe to this package.",
-        variant: "destructive",
-      })
+    //if (!isAuthenticated) {
+      //toast({
+       // title: "Login Required",
+       // description: "Please log in or sign up to subscribe to this package.",
+      //  variant: "destructive",
+     // })
       router.push("/login")
       return
     }
