@@ -72,73 +72,9 @@ export default function SupportPage() {
                 Need help? Contact our 24/7 support team by filling out the form below.
               </p>
             </div>
-            <div className="max-w-lg mx-auto bg-gray-900 p-6 rounded-lg border-2 border-yellow-400">
-              <div className="flex justify-center mb-6">
-                <Headphones className="h-12 w-12 text-yellow-400" />
-              </div>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label htmlFor="name" className="text-yellow-400">Name</Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    placeholder="Your name"
-                    className="bg-black text-white border-gray-700 focus:border-yellow-400"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="email" className="text-yellow-400">Email</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="Your email"
-                    className="bg-black text-white border-gray-700 focus:border-yellow-400"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="subject" className="text-yellow-400">Subject</Label>
-                  <Input
-                    id="subject"
-                    name="subject"
-                    value={formData.subject}
-                    onChange={handleChange}
-                    placeholder="Subject of your message"
-                    className="bg-black text-white border-gray-700 focus:border-yellow-400"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="message" className="text-yellow-400">Message</Label>
-                  <Textarea
-                    id="message"
-                    name="message"
-                    value={formData.message}
-                    onChange={handleChange}
-                    placeholder="How can we assist you?"
-                    className="bg-black text-white border-gray-700 focus:border-yellow-400"
-                    rows={5}
-                    required
-                  />
-                </div>
-                <Button
-                  type="submit"
-                  className="w-full bg-yellow-400 text-black hover:bg-yellow-300"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? "Sending..." : "Send Message"}
-                </Button>
-              </form>
-            </div>
 
-            {/* Instructions Section */}
-            <div className="max-w-2xl mx-auto mt-12">
+            {/* Instructions Section - Moved Above Form */}
+            <div className="max-w-2xl mx-auto mb-12">
               <h2 className="text-2xl font-bold text-yellow-400 mb-4">Instructions</h2>
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="vlc">
@@ -235,6 +171,72 @@ export default function SupportPage() {
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
+            </div>
+
+            {/* Support Form */}
+            <div className="max-w-lg mx-auto bg-gray-900 p-6 rounded-lg border-2 border-yellow-400">
+              <div className="flex justify-center mb-6">
+                <Headphones className="h-12 w-12 text-yellow-400" />
+              </div>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <Label htmlFor="name" className="text-yellow-400">Name</Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="Your name"
+                    className="bg-black text-white border-gray-700 focus:border-yellow-400"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="email" className="text-yellow-400">Email</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="Your email"
+                    className="bg-black text-white border-gray-700 focus:border-yellow-400"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="subject" className="text-yellow-400">Subject</Label>
+                  <Input
+                    id="subject"
+                    name="subject"
+                    value={formData.subject}
+                    onChange={handleChange}
+                    placeholder="Subject of your message"
+                    className="bg-black text-white border-gray-700 focus:border-yellow-400"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="message" className="text-yellow-400">Message</Label>
+                  <Textarea
+                    id="message"
+                    name="message"
+                    value={formData.message}
+                    onChange={handleChange}
+                    placeholder="How can we assist you?"
+                    className="bg-black text-white border-gray-700 focus:border-yellow-400"
+                    rows={5}
+                    required
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  className="w-full bg-yellow-400 text-black hover:bg-yellow-300"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Sending..." : "Send Message"}
+                </Button>
+              </form>
             </div>
           </div>
         </section>
