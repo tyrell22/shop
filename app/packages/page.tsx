@@ -37,7 +37,7 @@ export default function PackagesPage() {
         const data = await response.json()
         setIsAuthenticated(data.success)
       } catch (error) {
-        setIsAuthenticated(true)
+        setIsAuthenticated(false)
       }
     }
 
@@ -76,7 +76,7 @@ export default function PackagesPage() {
             id: 1,
             name: "Basic",
             description: "Perfect for casual viewers",
-            price: 9.99,
+            price: 19.99,
             duration_days: 30,
             features: ["1000+ Channels", "HD Quality", "24/7 Support", "1 Device"],
           },
