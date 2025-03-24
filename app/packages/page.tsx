@@ -146,16 +146,27 @@ export default function PackagesPage() {
   }
 
   const handleSubscribe = (productId: number) => {
-    if (!isAuthenticated) {
+    // Find the product in our list
+    const product = products.find(p => p.id === productId);
+    if (!product) {
       toast({
-        title: "Login Required",
-        description: "Please log in or sign up to subscribe to this package.",
+        title: "Error",
+        description: "Product not found.",
         variant: "destructive",
-      })
-      router.push("/login")
-      return
-   }
-    router.push(`/checkout?productId=${productId}`)
+      });
+      return;
+    }
+    
+    // Add to cart
+    addItem(product);
+    
+    toast({
+      title: "Added to Cart",
+      description: "Product has been added to your cart. Proceed to checkout to complete your order.",
+    });
+    
+    // Redirect to cart page instead of directly to checkout
+    router.push('/cart');
   }
 
   const handleAddToCart = (product: Product) => {

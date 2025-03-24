@@ -1,19 +1,64 @@
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Tv } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { getProducts } from "@/lib/product-service";
+import { useCart } from "@/lib/cart-context";
+import { useToast } from "@/components/ui/use-toast";
+import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 
-export default async function Home() {
-  let products = [];
-  try {
-    products = await getProducts();
-  } catch (error) {
-    console.error("Failed to fetch products:", error);
-  }
+export default function Home() {
+  const [products, setProducts] = useState([]);
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const { addItem } = useCart();
+  const { toast } = useToast();
+  const router = useRouter();
 
-  const featuredProducts = products.slice(0, 3);
+  useEffect(() => {
+    // Fetch products for client-side rendering
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch('/api/products');
+        const data = await response.json();
+        if (data.success) {
+          setProducts(data.products);
+          setFeaturedProducts(data.products.slice(0, 3));
+        }
+      } catch (error) {
+        console.error("Failed to fetch products:", error);
+      }
+    };
+    
+    fetchProducts();
+  }, []);
+
+  const handleSubscribeNow = (productId) => {
+    // Find the product
+    const product = products.find(p => p.id === productId);
+    if (!product) {
+      toast({
+        title: "Error",
+        description: "Product not found.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Add to cart
+    addItem(product);
+    
+    toast({
+      title: "Added to Cart",
+      description: "Product has been added to your cart. Proceed to checkout to complete your order.",
+    });
+    
+    // Redirect to cart page
+    router.push('/cart');
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -87,8 +132,8 @@ export default async function Home() {
                     </div>
                     <ul className="flex-1 mb-6 space-y-2">
                       {Array.isArray(product.features) && product.features.length > 0 ? (
-                        product.features.map((feature) => (
-                          <li key={feature} className="flex items-center text-gray-300">
+                        product.features.map((feature, index) => (
+                          <li key={index} className="flex items-center text-gray-300">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               viewBox="0 0 20 20"
@@ -108,9 +153,13 @@ export default async function Home() {
                         <li className="text-gray-300">No features listed</li>
                       )}
                     </ul>
-                    <Link href={`/checkout?productId=${product.id}`}>
-                      <Button className="bg-yellow-400 text-black hover:bg-yellow-300 w-full">Subscribe Now</Button>
-                    </Link>
+                    {/* Update the button to add to cart and redirect to cart */}
+                    <Button 
+                      className="bg-yellow-400 text-black hover:bg-yellow-300 w-full"
+                      onClick={() => handleSubscribeNow(product.id)}
+                    >
+                      Subscribe Now
+                    </Button>
                   </div>
                 ))
               ) : (
