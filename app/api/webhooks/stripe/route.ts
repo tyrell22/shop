@@ -42,7 +42,42 @@ export async function POST(request: NextRequest) {
     try {
       await client.query("BEGIN");
 
-      const userId = Number(session.metadata.user_id);
+      let userId;
+      const isGuestCheckout = session.metadata.user_id === 'guest';
+      
+      // Handle guest checkout
+      if (isGuestCheckout) {
+        // Create a temporary user for guest checkout
+        const guestEmail = session.metadata.guest_email || session.customer_details.email;
+        const guestName = session.metadata.guest_name || session.customer_details.name || "Guest";
+        
+        if (!guestEmail) {
+          throw new Error("Guest email is required for checkout");
+        }
+        
+        // Check if email exists to avoid duplicates
+        const existingUserCheck = await client.query(
+          "SELECT id FROM users WHERE email = $1", 
+          [guestEmail]
+        );
+        
+        if (existingUserCheck.rows.length > 0) {
+          // If user exists, use that ID
+          userId = existingUserCheck.rows[0].id;
+          console.log("Using existing user with ID:", userId);
+        } else {
+          // Otherwise create a new user
+          const guestUserResult = await client.query(
+            "INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id",
+            [guestName, guestEmail, "GUEST_USER"]
+          );
+          userId = guestUserResult.rows[0].id;
+          console.log("Created guest user with ID:", userId);
+        }
+      } else {
+        userId = Number(session.metadata.user_id);
+      }
+      
       const productId = Number(session.metadata.product_id);
       const durationDays = Number(session.metadata.duration_days);
       const totalAmount = session.amount_total / 100;
@@ -75,28 +110,38 @@ export async function POST(request: NextRequest) {
       await client.query("COMMIT");
       console.log("Transaction committed");
 
-      const user = await getUserById(userId);
-      const product = await getProductById(productId);
-      console.log("User:", user, "Product:", product);
+      // Send confirmation email
+      try {
+        const user = await getUserById(userId);
+        const product = await getProductById(productId);
+        console.log("User:", user, "Product:", product);
 
-      if (user && product) {
-        const emailTemplate = generateOrderConfirmationEmail(user.name, {
-          orderId: order.id,
-          productName: product.name,
-          price: totalAmount,
-          duration: durationDays,
-          startDate: new Date(subscription.start_date),
-          endDate: new Date(subscription.end_date),
-        });
-        console.log("Sending email to:", user.email);
-        const emailResult = await sendEmail(user.email, emailTemplate);
-        if (!emailResult.success) {
-          console.error("Email failed:", emailResult.message, emailResult.error);
+        if (user && product) {
+          const emailTemplate = generateOrderConfirmationEmail(user.name, {
+            orderId: order.id,
+            productName: product.name,
+            price: totalAmount,
+            duration: durationDays,
+            startDate: new Date(subscription.start_date),
+            endDate: new Date(subscription.end_date),
+          });
+          
+          // Get email - either from user record or session data
+          const emailTo = user.email || session.metadata.guest_email || session.customer_details.email;
+          console.log("Sending email to:", emailTo);
+          
+          const emailResult = await sendEmail(emailTo, emailTemplate);
+          if (!emailResult.success) {
+            console.error("Email failed:", emailResult.message, emailResult.error);
+          } else {
+            console.log("Email sent successfully");
+          }
         } else {
-          console.log("Email sent successfully");
+          console.warn("User or product not found for email:", { userId, productId });
         }
-      } else {
-        console.warn("User or product not found for email:", { userId, productId });
+      } catch (emailError) {
+        console.error("Error sending confirmation email:", emailError);
+        // We continue with order completion even if email fails
       }
 
       console.log(`Order fulfilled for user ${userId}, product ${productId}`);

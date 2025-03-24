@@ -9,18 +9,27 @@ import { getAuthUserId } from "@/lib/auth-utils"
 
 export async function POST(request: NextRequest) {
   try {
-    // Get the authenticated user
-    const userId = await getAuthUserId(request)
-
-    if (!userId) {
-      return NextResponse.json({ success: false, message: "Not authenticated" }, { status: 401 })
+    // Make authentication optional
+    let userId = null
+    try {
+      userId = await getAuthUserId(request)
+    } catch (error) {
+      console.log("Not authenticated, proceeding as guest checkout")
     }
-
+    
     // Get the request body
-    const { productId } = await request.json()
+    const { productId, guestInfo } = await request.json()
 
     if (!productId) {
       return NextResponse.json({ success: false, message: "Product ID is required" }, { status: 400 })
+    }
+    
+    // Check for guest info if not authenticated
+    if (!userId && (!guestInfo || !guestInfo.email)) {
+      return NextResponse.json({ 
+        success: false, 
+        message: "Guest checkout requires email information" 
+      }, { status: 400 })
     }
 
     // Get the product
@@ -53,10 +62,13 @@ export async function POST(request: NextRequest) {
       success_url: `${request.headers.get("origin")}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${request.headers.get("origin")}/packages`,
       metadata: {
-        user_id: userId,
+        user_id: userId || "guest",
         product_id: product.id,
         duration_days: product.duration_days,
+        guest_email: guestInfo?.email,
+        guest_name: guestInfo?.name || "Guest"
       },
+      customer_email: userId ? undefined : guestInfo?.email, // Pre-fill email for guest users
     })
 
     return NextResponse.json({ success: true, sessionId: session.id, url: session.url })
@@ -68,4 +80,3 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-
