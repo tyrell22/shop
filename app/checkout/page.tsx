@@ -10,6 +10,8 @@ import { CreditCard, ArrowLeft, Loader2 } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { loadStripe } from "@stripe/stripe-js"
 import { SiteHeader } from "@/components/site-header"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 // Add this at the top of the file, after the imports
 if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
@@ -28,10 +30,63 @@ type Product = {
   features: string[]
 }
 
+// GuestCheckoutForm component
+interface GuestCheckoutFormProps {
+  guestEmail: string;
+  setGuestEmail: (email: string) => void;
+  guestName: string;
+  setGuestName: (name: string) => void;
+}
+
+function GuestCheckoutForm({
+  guestEmail,
+  setGuestEmail,
+  guestName,
+  setGuestName
+}: GuestCheckoutFormProps) {
+  return (
+    <div className="space-y-4 mb-4">
+      <h3 className="text-lg font-medium text-yellow-400">Guest Checkout</h3>
+      <p className="text-sm text-gray-300">No account needed - enter your details below to continue.</p>
+      
+      <Separator className="bg-gray-800 my-4" />
+      
+      <div className="space-y-2">
+        <Label htmlFor="guest-email" className="text-gray-200">Email Address *</Label>
+        <Input
+          id="guest-email"
+          type="email"
+          value={guestEmail}
+          onChange={(e) => setGuestEmail(e.target.value)}
+          placeholder="your@email.com"
+          required
+          className="bg-black text-white border-gray-700 focus:border-yellow-400"
+        />
+        <p className="text-xs text-gray-400">Required for order confirmation</p>
+      </div>
+      
+      <div className="space-y-2">
+        <Label htmlFor="guest-name" className="text-gray-200">Your Name (Optional)</Label>
+        <Input
+          id="guest-name"
+          type="text"
+          value={guestName}
+          onChange={(e) => setGuestName(e.target.value)}
+          placeholder="Your Name"
+          className="bg-black text-white border-gray-700 focus:border-yellow-400"
+        />
+      </div>
+    </div>
+  );
+}
+
 export default function CheckoutPage() {
   const [product, setProduct] = useState<Product | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [guestEmail, setGuestEmail] = useState("")
+  const [guestName, setGuestName] = useState("")
   const router = useRouter()
   const searchParams = useSearchParams()
   const { toast } = useToast()
@@ -39,6 +94,17 @@ export default function CheckoutPage() {
   const productId = searchParams.get("productId")
 
   useEffect(() => {
+    // Check if user is authenticated
+    const checkAuth = async () => {
+      try {
+        const response = await fetch("/api/user/profile")
+        const data = await response.json()
+        setIsAuthenticated(data.success)
+      } catch (error) {
+        setIsAuthenticated(false)
+      }
+    }
+
     const fetchProduct = async () => {
       if (!productId) {
         router.push("/packages")
@@ -77,11 +143,42 @@ export default function CheckoutPage() {
       }
     }
 
+    checkAuth()
     fetchProduct()
   }, [productId, router])
 
+  const validateGuestInfo = () => {
+    if (!isAuthenticated) {
+      // Validate guest email
+      if (!guestEmail) {
+        toast({
+          title: "Email Required",
+          description: "Please enter your email address to continue with checkout.",
+          variant: "destructive",
+        })
+        return false
+      }
+      
+      // Simple email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(guestEmail)) {
+        toast({
+          title: "Invalid Email",
+          description: "Please enter a valid email address.",
+          variant: "destructive",
+        })
+        return false
+      }
+    }
+    
+    return true
+  }
+
   const handleCheckout = async () => {
     if (!product) return
+    
+    // Validate guest info if not authenticated
+    if (!isAuthenticated && !validateGuestInfo()) return
 
     setIsProcessing(true)
 
@@ -92,7 +189,16 @@ export default function CheckoutPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ productId: product.id }),
+        body: JSON.stringify({ 
+          productId: product.id,
+          // Include guest info if not authenticated
+          ...((!isAuthenticated) && { 
+            guestInfo: {
+              email: guestEmail,
+              name: guestName
+            }
+          })
+        }),
       })
 
       const data = await response.json()
@@ -201,6 +307,16 @@ export default function CheckoutPage() {
                   <CardDescription className="text-gray-400">Secure payment processing by Stripe</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  {/* Guest checkout form - only show if not authenticated */}
+                  {!isAuthenticated && (
+                    <GuestCheckoutForm
+                      guestEmail={guestEmail}
+                      setGuestEmail={setGuestEmail}
+                      guestName={guestName}
+                      setGuestName={setGuestName}
+                    />
+                  )}
+                  
                   <div className="rounded-md bg-gray-800 p-4">
                     <h3 className="text-lg font-medium text-white mb-2">Package Features:</h3>
                     <ul className="space-y-2">
@@ -257,4 +373,3 @@ export default function CheckoutPage() {
     </div>
   )
 }
-
