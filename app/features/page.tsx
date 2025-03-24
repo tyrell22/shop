@@ -3,7 +3,19 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Tv, Zap, Globe, Headphones, Monitor, Play, Cloud, Shield, Device, Clock, Check } from "lucide-react";
+import { 
+  Tv, 
+  Zap, 
+  Globe, 
+  Headphones, 
+  Monitor, 
+  Play, 
+  Cloud, 
+  Shield, 
+  Device, 
+  Clock, 
+  Check 
+} from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { SEOMetadata } from "@/components/seo-metadata";
@@ -84,7 +96,7 @@ export default function FeaturesPage() {
     { icon: <Cloud />, title: "Cloud DVR", description: "Record your favorite shows to watch later" },
     { icon: <Zap />, title: "Low Latency", description: "Almost real-time streaming with minimal delays" },
     { icon: <Shield />, title: "Secure Connection", description: "Encrypted streaming for your privacy and security" },
-    { icon: <Device />, title: "Multi-Device", description: "Use on multiple devices with a single subscription" },
+    { icon: <Check />, title: "Multi-Device", description: "Use on multiple devices with a single subscription" },
   ];
 
   return (
