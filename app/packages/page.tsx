@@ -1,83 +1,79 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { useToast } from "@/components/ui/use-toast"
-import { useRouter, useSearchParams } from "next/navigation"
-import { SiteHeader } from "@/components/site-header"
-import { SiteFooter } from "@/components/site-footer"
-import { useCart } from "@/lib/cart-context"
-import { ShoppingCart } from "lucide-react"
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/components/ui/use-toast";
+import { useRouter, useSearchParams } from "next/navigation";
+import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
+import { useCart } from "@/lib/cart-context";
+import { ShoppingCart } from "lucide-react";
 
 type Product = {
-  id: number
-  name: string
-  description: string
-  price: number
-  duration_days: number
-  features: string[]
-}
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  duration_days: number;
+  features: string[];
+};
 
 export default function PackagesPage() {
-  const [products, setProducts] = useState<Product[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const { toast } = useToast()
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const { addItem } = useCart()
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { toast } = useToast();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { addItem } = useCart();
 
-  const renewProductId = searchParams.get("renew")
+  const renewProductId = searchParams.get("renew");
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch("/api/user/profile")
-        const data = await response.json()
-        setIsAuthenticated(data.success)
+        const response = await fetch("/api/user/profile");
+        const data = await response.json();
+        setIsAuthenticated(data.success);
       } catch (error) {
-        setIsAuthenticated(false)
+        setIsAuthenticated(false);
       }
-    }
+    };
 
-    checkAuth()
-    fetchProducts()
-  }, [])
+    checkAuth();
+    fetchProducts();
+  }, []);
 
   const fetchProducts = async () => {
     try {
-      setIsLoading(true)
-      console.log("Fetching products...")
-      const response = await fetch("/api/products")
-      const data = await response.json()
-      console.log("Products API response:", data)
+      setIsLoading(true);
+      console.log("Fetching products...");
+      const response = await fetch("/api/products");
+      const data = await response.json();
+      console.log("Products API response:", data);
 
       if (data.success && Array.isArray(data.products) && data.products.length > 0) {
         // Process products to ensure correct data types
         const processedProducts = data.products.map((product) => ({
           ...product,
-          // Ensure price is a number
           price: typeof product.price === "string" ? Number.parseFloat(product.price) : Number(product.price),
-          // Ensure duration_days is a number
           duration_days:
             typeof product.duration_days === "string"
               ? Number.parseInt(product.duration_days)
               : Number(product.duration_days),
-          // Parse features if it's a string, otherwise ensure it's an array
           features:
             typeof product.features === "string"
               ? JSON.parse(product.features)
               : Array.isArray(product.features)
-                ? product.features
-                : [],
-        }))
+              ? product.features
+              : [],
+        }));
 
-        console.log("Processed products:", processedProducts)
-        setProducts(processedProducts)
+        console.log("Processed products:", processedProducts);
+        setProducts(processedProducts);
       } else {
-        console.log("No products returned, using sample data")
-        // If no products are returned, use sample data
+        console.log("No products returned, using sample data");
         setProducts([
           {
             id: 1,
@@ -110,11 +106,10 @@ export default function PackagesPage() {
               "PPV Events",
             ],
           },
-        ])
+        ]);
       }
     } catch (error) {
-      console.error("Error fetching products:", error)
-      // Use sample data on error
+      console.error("Error fetching products:", error);
       setProducts([
         {
           id: 1,
@@ -147,11 +142,11 @@ export default function PackagesPage() {
             "PPV Events",
           ],
         },
-      ])
+      ]);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleSubscribe = (productId: number) => {
     if (!isAuthenticated) {
@@ -159,28 +154,28 @@ export default function PackagesPage() {
         title: "Login Required",
         description: "Please log in to subscribe to this package.",
         variant: "destructive",
-      })
-      router.push("/login")
-      return
+      });
+      router.push("/login");
+      return;
     }
 
-    router.push(`/checkout?productId=${productId}`)
-  }
+    router.push(`/checkout?productId=${productId}`);
+  };
 
   const handleAddToCart = (product: Product) => {
-    addItem(product)
+    addItem(product);
     toast({
       title: "Added to Cart",
       description: `${product.name} has been added to your cart.`,
-    })
-  }
+    });
+  };
 
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-black">
         <div className="text-yellow-400">Loading packages...</div>
       </div>
-    )
+    );
   }
 
   return (
@@ -217,8 +212,8 @@ export default function PackagesPage() {
                       {product.duration_days === 30
                         ? "/month"
                         : product.duration_days === 365
-                          ? "/year"
-                          : `/${product.duration_days} days`}
+                        ? "/year"
+                        : `/${product.duration_days} days`}
                     </span>
                   </div>
                 </CardHeader>
@@ -267,6 +262,5 @@ export default function PackagesPage() {
       </main>
       <SiteFooter />
     </div>
-  )
+  );
 }
-
