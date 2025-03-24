@@ -2,26 +2,24 @@ import { type NextRequest, NextResponse } from "next/server";
 import { createOrder, addOrderItem } from "@/lib/order-service";
 import { createSubscription } from "@/lib/subscription-service";
 import { getProductById } from "@/lib/product-service";
-import { verify } from "jsonwebtoken";
-import { cookies } from "next/headers";
 import { addDays } from "date-fns";
 import { generateOrderConfirmationEmail, sendEmail } from "@/lib/email-service";
-import { sql } from "@vercel/postgres"; // Import sql directly
-import { jwtConfig } from "@/lib/config";
+import { sql } from "@vercel/postgres";
+import { requireAuth } from "@/lib/auth-middleware";
 
 export async function POST(request: NextRequest) {
   console.log("Checkout request received");
 
   try {
-    const token = cookies().get(jwtConfig.cookieName)?.value;
-    if (!token) {
-      return NextResponse.json({ success: false, message: "Not authenticated" }, { status: 401 });
+    // Check authentication
+    const authResult = await requireAuth();
+    
+    if (!authResult.success) {
+      return NextResponse.json(
+        { success: false, message: authResult.message },
+        { status: authResult.status }
+      );
     }
-
-    const decoded = verify(token, jwtConfig.secret) as { id: number; email: string; name: string };
-    console.log("User:", decoded);
-
-    // Rest of the function remains the same
 
     const { productId, paymentMethod } = await request.json();
     console.log("Request body:", { productId, paymentMethod });
@@ -31,6 +29,8 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Rest of the checkout logic...
 
     const product = await getProductById(productId);
     if (!product) {

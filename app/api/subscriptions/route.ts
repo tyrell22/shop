@@ -1,48 +1,43 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server";
 import {
   getUserSubscriptions,
   getActiveUserSubscriptions,
   getExpiredUserSubscriptions,
-} from "@/lib/subscription-service"
-import { verify } from "jsonwebtoken"
-import { cookies } from "next/headers"
-
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key"
-
+} from "@/lib/subscription-service";
+import { requireAuth } from "@/lib/auth-middleware";
 
 export async function GET(request: NextRequest) {
   try {
-    // Get the token from cookies
-    const token = cookies().get("auth_token")?.value
-
-    if (!token) {
-      return NextResponse.json({ success: false, message: "Not authenticated" }, { status: 401 })
+    // Check authentication
+    const authResult = await requireAuth();
+    
+    if (!authResult.success) {
+      return NextResponse.json(
+        { success: false, message: authResult.message },
+        { status: authResult.status }
+      );
     }
-
-    // Verify the token
-    const decoded = verify(token, JWT_SECRET) as { id: number; email: string; name: string }
 
     // Get the filter parameter
-    const { searchParams } = new URL(request.url)
-    const filter = searchParams.get("filter")
+    const { searchParams } = new URL(request.url);
+    const filter = searchParams.get("filter");
 
-    let subscriptions
+    let subscriptions;
 
     if (filter === "active") {
-      subscriptions = await getActiveUserSubscriptions(decoded.id)
+      subscriptions = await getActiveUserSubscriptions(authResult.user.id);
     } else if (filter === "expired") {
-      subscriptions = await getExpiredUserSubscriptions(decoded.id)
+      subscriptions = await getExpiredUserSubscriptions(authResult.user.id);
     } else {
-      subscriptions = await getUserSubscriptions(decoded.id)
+      subscriptions = await getUserSubscriptions(authResult.user.id);
     }
 
-    return NextResponse.json({ success: true, subscriptions })
+    return NextResponse.json({ success: true, subscriptions });
   } catch (error) {
-    console.error("Error fetching subscriptions:", error)
+    console.error("Error fetching subscriptions:", error);
     return NextResponse.json(
       { success: false, message: "Failed to fetch subscriptions", error: String(error) },
-      { status: 500 },
-    )
+      { status: 500 }
+    );
   }
 }
-

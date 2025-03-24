@@ -3,30 +3,18 @@ import { query } from "@/lib/db";
 import { sendEmail, generateM3uUpdateEmail } from "@/lib/email-service";
 import { getUserById } from "@/lib/user-service";
 import { getProductById } from "@/lib/product-service";
-import { verify } from "jsonwebtoken";
-import { cookies } from "next/headers";
-import { jwtConfig } from "@/lib/config";
+import { requireAdmin } from "@/lib/auth-middleware";
 
 export async function POST(request: NextRequest) {
   try {
-    // Get the token from cookies
-    const token = cookies().get(jwtConfig.cookieName)?.value;
-
-    if (!token) {
-      return NextResponse.json({ success: false, message: "Not authenticated" }, { status: 401 });
-    }
-
-    // Verify the token
-    const decoded = verify(token, jwtConfig.secret) as { 
-      id: number; 
-      email: string; 
-      name: string;
-      isAdmin?: boolean;
-    };
-
-    // Check if user is admin
-    if (!decoded.isAdmin) {
-      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 403 });
+    // Check admin authentication
+    const authResult = await requireAdmin();
+    
+    if (!authResult.success) {
+      return NextResponse.json(
+        { success: false, message: authResult.message },
+        { status: authResult.status }
+      );
     }
     
     const { subscriptionId, m3uUrl } = await request.json();
