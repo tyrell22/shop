@@ -7,9 +7,16 @@ import { Inter } from "next/font/google"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata = {
-  title: "Crisp TV - Premium IPTV Service",
-  description: "Premium IPTV service with thousands of channels worldwide.",
-    generator: 'v0.dev'
+  title: "Crisp TV - Best Cheap IPTV Service",
+  description: "Premium cheap IPTV service with thousands of channels worldwide, and IPTV free trial",
+  icons: {
+    icon: [
+      { url: "/images/crisptvlogo.png" }
+    ],
+    apple: [
+      { url: "/images/crisptvlogo.png" }
+    ]
+  }
 }
 
 export default function RootLayout({
