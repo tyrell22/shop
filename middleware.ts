@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-
-// Get the JWT secret from environment variables
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key"
+import { jwtConfig } from "@/lib/config"
 
 export async function middleware(request: NextRequest) {
   // Get the pathname
@@ -29,7 +27,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Get the token from the cookies
-  const token = request.cookies.get("auth_token")?.value
+  const token = request.cookies.get(jwtConfig.cookieName)?.value
 
   // If there's no token and it's not a public path, redirect to login
   if (!token) {
@@ -53,4 +51,3 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: ["/((?!api/init-db|_next/static|_next/image|favicon.ico|images).*)"],
 }
-

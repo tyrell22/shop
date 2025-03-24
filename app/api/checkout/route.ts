@@ -7,20 +7,21 @@ import { cookies } from "next/headers";
 import { addDays } from "date-fns";
 import { generateOrderConfirmationEmail, sendEmail } from "@/lib/email-service";
 import { sql } from "@vercel/postgres"; // Import sql directly
-
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+import { jwtConfig } from "@/lib/config";
 
 export async function POST(request: NextRequest) {
   console.log("Checkout request received");
 
   try {
-    const token = cookies().get("auth_token")?.value;
+    const token = cookies().get(jwtConfig.cookieName)?.value;
     if (!token) {
       return NextResponse.json({ success: false, message: "Not authenticated" }, { status: 401 });
     }
 
-    const decoded = verify(token, JWT_SECRET) as { id: number; email: string; name: string };
+    const decoded = verify(token, jwtConfig.secret) as { id: number; email: string; name: string };
     console.log("User:", decoded);
+
+    // Rest of the function remains the same
 
     const { productId, paymentMethod } = await request.json();
     console.log("Request body:", { productId, paymentMethod });

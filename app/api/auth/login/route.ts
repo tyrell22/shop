@@ -1,10 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getUserByEmail, verifyPassword } from "@/lib/user-service";
 import { cookies } from "next/headers";
-import jwt from "jsonwebtoken"; // Import jsonwebtoken
-
-// Get the JWT secret from environment variables
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key"; // Ensure this is strong and unique in production
+import jwt from "jsonwebtoken"; 
+import { jwtConfig } from "@/lib/config";
 
 export async function POST(request: NextRequest) {
   try {
@@ -38,20 +36,16 @@ export async function POST(request: NextRequest) {
       id: user.id,
       email: user.email,
       name: user.name,
-      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7, // 7 days expiration
+      exp: Math.floor(Date.now() / 1000) + jwtConfig.expiresIn,
     };
 
-    const token = jwt.sign(payload, JWT_SECRET, { algorithm: "HS256" }); // Sign the token with HS256
+    const token = jwt.sign(payload, jwtConfig.secret, { algorithm: "HS256" });
 
     // Set the token in a cookie
     cookies().set({
-      name: "auth_token",
+      name: jwtConfig.cookieName,
       value: token,
-      httpOnly: true,
-      path: "/",
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      sameSite: "lax",
+      ...jwtConfig.cookieOptions
     });
 
     // Return the user without password

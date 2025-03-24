@@ -1,17 +1,15 @@
 import { NextResponse } from "next/server"
 import { cookies } from "next/headers"
+import { jwtConfig } from "@/lib/config"
 
 export async function POST() {
   // Clear the auth cookie
   cookies().set({
-    name: "auth_token",
+    name: jwtConfig.cookieName,
     value: "",
-    httpOnly: true,
-    path: "/",
-    secure: process.env.NODE_ENV === "production",
+    ...jwtConfig.cookieOptions,
     maxAge: 0,
   })
 
   return NextResponse.json({ success: true, message: "Logged out successfully" })
 }
-

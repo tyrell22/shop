@@ -1,11 +1,10 @@
 import type { NextRequest } from "next/server"
 import { verify } from "jsonwebtoken"
-
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key"
+import { jwtConfig } from "./config"
 
 // Function to get the authenticated user ID from the request
 export async function getAuthUserId(req: NextRequest): Promise<number | null> {
-  const token = req.cookies.get("auth_token")?.value
+  const token = req.cookies.get(jwtConfig.cookieName)?.value
 
   if (!token) {
     return null
@@ -13,7 +12,7 @@ export async function getAuthUserId(req: NextRequest): Promise<number | null> {
 
   try {
     // Verify the token
-    const decoded = verify(token, JWT_SECRET) as { id: number; email: string; name: string }
+    const decoded = verify(token, jwtConfig.secret) as { id: number; email: string; name: string }
     return decoded.id || null
   } catch (error) {
     console.error("Error parsing auth token:", error)
@@ -26,4 +25,3 @@ export async function isAuthenticated(req: NextRequest): Promise<boolean> {
   const userId = await getAuthUserId(req)
   return userId !== null
 }
-

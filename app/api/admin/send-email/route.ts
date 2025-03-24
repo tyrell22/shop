@@ -3,20 +3,19 @@ import { verify } from "jsonwebtoken"
 import { cookies } from "next/headers"
 import { isAdmin } from "@/lib/admin-utils"
 import { sendEmail } from "@/lib/email-service"
-
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key"
+import { jwtConfig } from "@/lib/config"
 
 export async function POST(request: NextRequest) {
   try {
     // Get the token from cookies
-    const token = cookies().get("auth_token")?.value
+    const token = cookies().get(jwtConfig.cookieName)?.value
 
     if (!token) {
       return NextResponse.json({ success: false, message: "Not authenticated" }, { status: 401 })
     }
 
     // Verify the token
-    const decoded = verify(token, JWT_SECRET) as { id: number; email: string; name: string }
+    const decoded = verify(token, jwtConfig.secret) as { id: number; email: string; name: string }
 
     // Check if user is admin
     const admin = await isAdmin(decoded.id)
@@ -49,4 +48,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, message: "Failed to send email", error: String(error) }, { status: 500 })
   }
 }
-

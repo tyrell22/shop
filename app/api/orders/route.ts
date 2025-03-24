@@ -2,20 +2,19 @@ import { type NextRequest, NextResponse } from "next/server"
 import { createOrder, getUserOrders } from "@/lib/order-service"
 import { verify } from "jsonwebtoken"
 import { cookies } from "next/headers"
-
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key"
+import { jwtConfig } from "@/lib/config"
 
 export async function GET() {
   try {
     // Get the token from cookies
-    const token = cookies().get("auth_token")?.value
+    const token = cookies().get(jwtConfig.cookieName)?.value
 
     if (!token) {
       return NextResponse.json({ success: false, message: "Not authenticated" }, { status: 401 })
     }
 
     // Verify the token
-    const decoded = verify(token, JWT_SECRET) as { id: number; email: string; name: string }
+    const decoded = verify(token, jwtConfig.secret) as { id: number; email: string; name: string }
 
     // Get the user's orders
     const orders = await getUserOrders(decoded.id)
@@ -33,14 +32,14 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     // Get the token from cookies
-    const token = cookies().get("auth_token")?.value
+    const token = cookies().get(jwtConfig.cookieName)?.value
 
     if (!token) {
       return NextResponse.json({ success: false, message: "Not authenticated" }, { status: 401 })
     }
 
     // Verify the token
-    const decoded = verify(token, JWT_SECRET) as { id: number; email: string; name: string }
+    const decoded = verify(token, jwtConfig.secret) as { id: number; email: string; name: string }
 
     // Get the request body
     const { totalAmount, status, paymentMethod } = await request.json()
@@ -65,4 +64,3 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-
