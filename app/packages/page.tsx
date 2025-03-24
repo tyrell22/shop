@@ -54,17 +54,13 @@ export default function PackagesPage() {
       console.log("Products API response:", data)
 
       if (data.success && Array.isArray(data.products) && data.products.length > 0) {
-        // Process products to ensure correct data types
         const processedProducts = data.products.map((product) => ({
           ...product,
-          // Ensure price is a number
           price: typeof product.price === "string" ? Number.parseFloat(product.price) : Number(product.price),
-          // Ensure duration_days is a number
           duration_days:
             typeof product.duration_days === "string"
               ? Number.parseInt(product.duration_days)
               : Number(product.duration_days),
-          // Parse features if it's a string, otherwise ensure it's an array
           features:
             typeof product.features === "string"
               ? JSON.parse(product.features)
@@ -72,12 +68,9 @@ export default function PackagesPage() {
                 ? product.features
                 : [],
         }))
-
-        console.log("Processed products:", processedProducts)
         setProducts(processedProducts)
       } else {
         console.log("No products returned, using sample data")
-        // If no products are returned, use sample data
         setProducts([
           {
             id: 1,
@@ -114,7 +107,6 @@ export default function PackagesPage() {
       }
     } catch (error) {
       console.error("Error fetching products:", error)
-      // Use sample data on error
       setProducts([
         {
           id: 1,
@@ -157,13 +149,12 @@ export default function PackagesPage() {
     if (!isAuthenticated) {
       toast({
         title: "Login Required",
-        description: "Please log in to subscribe to this package.",
+        description: "Please log in or sign up to subscribe to this package.",
         variant: "destructive",
       })
       router.push("/login")
       return
     }
-
     router.push(`/checkout?productId=${productId}`)
   }
 
