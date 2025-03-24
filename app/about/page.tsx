@@ -1,329 +1,270 @@
+// app/about/page.tsx
 "use client"
 
-import { useEffect, useState } from "react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { useToast } from "@/components/ui/toast"
-import { useRouter, useSearchParams } from "next/navigation"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
-import { useCart } from "@/lib/cart-context"
-import { ShoppingCart } from "lucide-react"
 import { SEOMetadata } from "@/components/seo-metadata"
-import { generateFAQSchema, generateProductSchema } from "@/lib/structured-data"
+import { Check, Clock, Globe, Shield, Users, Award, Tv, Headphones } from "lucide-react"
+import { generateLocalBusinessSchema } from "@/lib/structured-data"
 
-type Product = {
-  id: number
-  name: string
-  description: string
-  price: number
-  duration_days: number
-  features: string[]
-  meta_title?: string
-  meta_description?: string
-  focus_keywords?: string[]
-  seo_slug?: string
-  canonical_url?: string
-  og_image_url?: string
-}
-
-export default function PackagesPage() {
-  const [products, setProducts] = useState<Product[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const { toast } = useToast()
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const { addItem } = useCart()
-
-  const renewProductId = searchParams.get("renew")
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch("/api/user/profile")
-        const data = await response.json()
-        setIsAuthenticated(data.success)
-      } catch (error) {
-        setIsAuthenticated(false)
-      }
-    }
-
-    checkAuth()
-    fetchProducts()
-  }, [])
-
-  const fetchProducts = async () => {
-    try {
-      setIsLoading(true)
-      console.log("Fetching products...")
-      const response = await fetch("/api/products")
-      const data = await response.json()
-      console.log("Products API response:", data)
-
-      if (data.success && Array.isArray(data.products) && data.products.length > 0) {
-        const processedProducts = data.products.map((product) => ({
-          ...product,
-          price: typeof product.price === "string" ? Number.parseFloat(product.price) : Number(product.price),
-          duration_days:
-            typeof product.duration_days === "string"
-              ? Number.parseInt(product.duration_days)
-              : Number(product.duration_days),
-          features:
-            typeof product.features === "string"
-              ? JSON.parse(product.features)
-              : Array.isArray(product.features)
-                ? product.features
-                : [],
-        }))
-        setProducts(processedProducts)
-      } else {
-        console.log("No products returned, using sample data")
-        setProducts([
-          {
-            id: 1,
-            name: "Basic",
-            description: "Perfect for casual viewers",
-            price: 19.99,
-            duration_days: 30,
-            features: ["1000+ Channels", "HD Quality", "24/7 Support", "1 Device"],
-          },
-          {
-            id: 2,
-            name: "Standard",
-            description: "Our most popular package",
-            price: 14.99,
-            duration_days: 30,
-            features: ["2000+ Channels", "HD & FHD Quality", "24/7 Support", "2 Devices", "VOD Access"],
-          },
-          {
-            id: 3,
-            name: "Premium",
-            description: "The ultimate viewing experience",
-            price: 19.99,
-            duration_days: 30,
-            features: [
-              "3000+ Channels",
-              "HD, FHD & 4K Quality",
-              "24/7 Priority Support",
-              "4 Devices",
-              "VOD & Series Access",
-              "PPV Events",
-            ],
-          },
-        ])
-      }
-    } catch (error) {
-      console.error("Error fetching products:", error)
-      setProducts([
-        {
-          id: 1,
-          name: "Basic",
-          description: "Perfect for casual viewers",
-          price: 19.99,
-          duration_days: 30,
-          features: ["1000+ Channels", "HD Quality", "24/7 Support", "1 Device"],
-        },
-        {
-          id: 2,
-          name: "Standard",
-          description: "Our most popular package",
-          price: 14.99,
-          duration_days: 30,
-          features: ["2000+ Channels", "HD & FHD Quality", "24/7 Support", "2 Devices", "VOD Access"],
-        },
-        {
-          id: 3,
-          name: "Premium",
-          description: "The ultimate viewing experience",
-          price: 19.99,
-          duration_days: 30,
-          features: [
-            "3000+ Channels",
-            "HD, FHD & 4K Quality",
-            "24/7 Priority Support",
-            "4 Devices",
-            "VOD & Series Access",
-            "PPV Events",
-          ],
-        },
-      ])
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleSubscribe = (productId: number) => {
-    // Find the product in our list
-    const product = products.find(p => p.id === productId);
-    if (!product) {
-      toast({
-        title: "Error",
-        description: "Product not found.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // Add to cart
-    addItem(product);
-    
-    toast({
-      title: "Added to Cart",
-      description: "Product has been added to your cart. Proceed to checkout to complete your order.",
-    });
-    
-    // Redirect to cart page instead of directly to checkout
-    router.push('/cart');
-  }
-
-  const handleAddToCart = (product: Product) => {
-    addItem(product)
-    toast({
-      title: "Added to Cart",
-      description: `${product.name} has been added to your cart.`,
-    })
-  }
-
-  // Create structured data for product list
-  const productsStructuredData = {
-    "@context": "https://schema.org",
-    "@graph": products.map(product => generateProductSchema(product))
-  };
-  
-  // FAQ Schema
-  const faqSchema = generateFAQSchema([
-    {
-      question: "What is Crisp TV?",
-      answer: "Crisp TV is a premium IPTV service that offers thousands of live TV channels from around the world in HD, FHD, and 4K quality."
-    },
-    {
-      question: "How many devices can I use with my subscription?",
-      answer: "The number of devices depends on your subscription package. Our Basic plan supports 1 device, Standard supports 2 devices, and Premium supports up to 4 devices simultaneously."
-    },
-    {
-      question: "What payment methods do you accept?",
-      answer: "We accept all major credit cards and secure online payments through our payment processor."
-    },
-    {
-      question: "Can I get a refund if I'm not satisfied?",
-      answer: "Please contact our customer support team within 24 hours of your purchase if you experience any issues with our service."
-    },
-    {
-      question: "How do I access my IPTV channels after purchase?",
-      answer: "After completing your purchase, you'll receive an M3U URL that can be used with compatible devices and apps like VLC, IPTV Smarters, or any device that supports M3U playlists."
-    }
-  ]);
-
-  // Combine all structured data
-  const combinedStructuredData = {
-    "@context": "https://schema.org",
-    "@graph": [
-      ...productsStructuredData["@graph"],
-      faqSchema
-    ]
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-black">
-        <div className="text-yellow-400">Loading packages...</div>
-      </div>
-    )
-  }
+export default function AboutPage() {
+  // Generate structured data for local business
+  const localBusinessSchema = generateLocalBusinessSchema()
 
   return (
     <>
       <SEOMetadata 
-        title="IPTV Subscription Packages | Crisp TV Premium Plans"
-        description="Choose from our range of premium IPTV subscription packages. Get access to thousands of channels worldwide with HD, FHD, and 4K quality streaming options."
-        canonical="/packages"
-        keywords={["iptv packages", "iptv subscription", "iptv plans", "premium tv channels", "live tv subscription"]}
-        structuredData={combinedStructuredData}
+        title="About Crisp TV | Premium IPTV Service Provider"
+        description="Learn about Crisp TV, a leading premium IPTV service provider offering thousands of HD channels worldwide with reliable streaming and 24/7 customer support."
+        canonical="/about"
+        keywords={["about crisp tv", "iptv provider", "premium tv service", "iptv company", "streaming service"]}
+        structuredData={localBusinessSchema}
       />
 
-      <div className="flex min-h-screen flex-col bg-black">
+      <div className="flex min-h-screen flex-col bg-black text-white">
         <SiteHeader />
-        <main className="flex-1 py-12">
-          <div className="container px-4 md:px-6">
-            <div className="flex flex-col items-center justify-center space-y-4 text-center">
-              <div className="space-y-2">
-                <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl text-yellow-400">
-                  Choose Your Crisp TV Package
-                </h1>
-                <p className="max-w-[900px] text-gray-300 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  Select the perfect plan for your entertainment needs
-                </p>
+        <main className="flex-1">
+          {/* Hero Section */}
+          <section className="w-full py-16 md:py-24 lg:py-32 bg-gradient-to-b from-gray-900 to-black">
+            <div className="container px-4 md:px-6">
+              <div className="flex flex-col items-center justify-center space-y-4 text-center">
+                <div className="space-y-2">
+                  <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl md:text-6xl text-yellow-400">
+                    About Crisp TV
+                  </h1>
+                  <p className="max-w-[800px] mx-auto text-gray-300 text-xl md:text-2xl">
+                    A Premium IPTV Service With Global Reach
+                  </p>
+                </div>
               </div>
             </div>
-            <div className="grid grid-cols-1 gap-6 mt-8 md:grid-cols-3">
-              {products.map((product) => (
-                <Card
-                  key={product.id}
-                  className={`flex flex-col p-6 bg-gray-900 rounded-lg border-2 ${
-                    renewProductId === product.id.toString()
-                      ? "border-green-500 shadow-lg shadow-green-500/20"
-                      : "border-yellow-400"
-                  }`}
-                >
-                  <CardHeader className="pb-4">
-                    <CardTitle className="text-xl font-bold text-yellow-400">{product.name}</CardTitle>
-                    <p className="text-sm text-gray-400">{product.description}</p>
-                    <div className="mt-2 text-3xl font-bold text-white">
-                      ${typeof product.price === "number" ? product.price.toFixed(2) : "0.00"}
-                      <span className="text-sm font-normal text-gray-400">
-                        {product.duration_days === 30
-                          ? "/month"
-                          : product.duration_days === 365
-                            ? "/year"
-                            : `/${product.duration_days} days`}
-                      </span>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="flex-1">
-                    <ul className="space-y-2">
-                      {Array.isArray(product.features) &&
-                        product.features.map((feature, index) => (
-                          <li key={index} className="flex items-center text-gray-300">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 20 20"
-                              fill="currentColor"
-                              className="w-5 h-5 mr-2 text-yellow-400"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                            {feature}
-                          </li>
-                        ))}
-                    </ul>
-                  </CardContent>
-                  <CardFooter className="pt-4 flex flex-col gap-2">
-                    <Button
-                      className="w-full bg-yellow-400 text-black hover:bg-yellow-300"
-                      onClick={() => handleSubscribe(product.id)}
-                    >
-                      {renewProductId === product.id.toString() ? "Renew Subscription" : "Subscribe Now"}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="w-full border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black"
-                      onClick={() => handleAddToCart(product)}
-                    >
-                      <ShoppingCart className="mr-2 h-4 w-4" />
-                      Add to Cart
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
+          </section>
+
+          {/* Our Story Section */}
+          <section className="w-full py-12 md:py-24 bg-black">
+            <div className="container px-4 md:px-6">
+              <div className="grid gap-12 lg:grid-cols-2 items-center">
+                <div className="space-y-4">
+                  <div className="inline-block rounded-lg bg-yellow-400 px-3 py-1 text-sm font-semibold text-black">
+                    Our Story
+                  </div>
+                  <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl text-yellow-400">
+                    A Passion for Quality Entertainment
+                  </h2>
+                  <p className="text-gray-300 md:text-lg">
+                    Founded in 2020, Crisp TV was born out of a passion to provide high-quality entertainment options to viewers around the world. Our founders recognized a gap in the market for reliable, high-definition streaming services that offered extensive channel selection at affordable prices.
+                  </p>
+                  <p className="text-gray-300 md:text-lg">
+                    Starting with just a few hundred channels and a small team of dedicated professionals, we've grown to offer thousands of channels in multiple languages, serving customers across the globe. Our commitment to quality, reliability, and customer satisfaction has helped us become a leading name in the IPTV industry.
+                  </p>
+                </div>
+                <div className="relative rounded-xl border-2 border-yellow-400 overflow-hidden aspect-square bg-gray-900">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Tv className="w-24 h-24 text-yellow-400 opacity-50" />
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
+          </section>
+
+          {/* Our Mission Section */}
+          <section className="w-full py-12 md:py-24 bg-gray-900">
+            <div className="container px-4 md:px-6">
+              <div className="text-center space-y-4 mb-12">
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl text-yellow-400">
+                  Our Mission
+                </h2>
+                <p className="max-w-[700px] mx-auto text-gray-300 md:text-xl">
+                  To provide the most comprehensive and reliable IPTV service, delivering world-class entertainment to our customers at competitive prices.
+                </p>
+              </div>
+              
+              <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="flex flex-col items-center text-center bg-gray-800 rounded-lg p-6 border border-gray-700">
+                  <div className="rounded-full bg-yellow-400/10 p-4 mb-4">
+                    <Tv className="h-8 w-8 text-yellow-400" />
+                  </div>
+                  <h3 className="text-xl font-bold text-yellow-400 mb-2">
+                    Premium Content
+                  </h3>
+                  <p className="text-gray-300">
+                    We curate thousands of high-quality channels and on-demand content from around the world to ensure our customers have access to the best entertainment options.
+                  </p>
+                </div>
+                
+                <div className="flex flex-col items-center text-center bg-gray-800 rounded-lg p-6 border border-gray-700">
+                  <div className="rounded-full bg-yellow-400/10 p-4 mb-4">
+                    <Shield className="h-8 w-8 text-yellow-400" />
+                  </div>
+                  <h3 className="text-xl font-bold text-yellow-400 mb-2">
+                    Reliability & Stability
+                  </h3>
+                  <p className="text-gray-300">
+                    Our advanced infrastructure ensures minimal buffering and downtime, providing a smooth viewing experience comparable to traditional cable or satellite TV.
+                  </p>
+                </div>
+                
+                <div className="flex flex-col items-center text-center bg-gray-800 rounded-lg p-6 border border-gray-700">
+                  <div className="rounded-full bg-yellow-400/10 p-4 mb-4">
+                    <Headphones className="h-8 w-8 text-yellow-400" />
+                  </div>
+                  <h3 className="text-xl font-bold text-yellow-400 mb-2">
+                    Customer Support
+                  </h3>
+                  <p className="text-gray-300">
+                    Our dedicated support team is available 24/7 to help with any questions or technical issues, ensuring our customers always have assistance when they need it.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Why Choose Us Section */}
+          <section className="w-full py-12 md:py-24 bg-black">
+            <div className="container px-4 md:px-6">
+              <div className="text-center space-y-4 mb-12">
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl text-yellow-400">
+                  Why Choose Crisp TV?
+                </h2>
+                <p className="max-w-[700px] mx-auto text-gray-300 md:text-xl">
+                  Experience the difference with our premium IPTV service
+                </p>
+              </div>
+              
+              <div className="grid gap-6 sm:grid-cols-2">
+                <div className="flex gap-4 items-start">
+                  <div className="shrink-0 rounded-full bg-yellow-400 p-1">
+                    <Check className="h-5 w-5 text-black" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-yellow-400 mb-2">Extensive Channel Selection</h3>
+                    <p className="text-gray-300">Over 3,000 channels from various countries and categories, ensuring there's always something for everyone.</p>
+                  </div>
+                </div>
+                
+                <div className="flex gap-4 items-start">
+                  <div className="shrink-0 rounded-full bg-yellow-400 p-1">
+                    <Check className="h-5 w-5 text-black" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-yellow-400 mb-2">HD & 4K Quality</h3>
+                    <p className="text-gray-300">Experience crystal-clear video quality with our HD, FHD, and 4K streaming options.</p>
+                  </div>
+                </div>
+                
+                <div className="flex gap-4 items-start">
+                  <div className="shrink-0 rounded-full bg-yellow-400 p-1">
+                    <Check className="h-5 w-5 text-black" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-yellow-400 mb-2">Multi-Device Support</h3>
+                    <p className="text-gray-300">Watch on Smart TVs, smartphones, tablets, computers, and streaming devices with our flexible service.</p>
+                  </div>
+                </div>
+                
+                <div className="flex gap-4 items-start">
+                  <div className="shrink-0 rounded-full bg-yellow-400 p-1">
+                    <Check className="h-5 w-5 text-black" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-yellow-400 mb-2">VOD Library</h3>
+                    <p className="text-gray-300">Access our extensive video-on-demand library with the latest movies and TV shows.</p>
+                  </div>
+                </div>
+                
+                <div className="flex gap-4 items-start">
+                  <div className="shrink-0 rounded-full bg-yellow-400 p-1">
+                    <Check className="h-5 w-5 text-black" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-yellow-400 mb-2">Competitive Pricing</h3>
+                    <p className="text-gray-300">Enjoy premium entertainment at a fraction of the cost of traditional cable or satellite TV.</p>
+                  </div>
+                </div>
+                
+                <div className="flex gap-4 items-start">
+                  <div className="shrink-0 rounded-full bg-yellow-400 p-1">
+                    <Check className="h-5 w-5 text-black" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-yellow-400 mb-2">Regular Updates</h3>
+                    <p className="text-gray-300">We continuously update our channel list and improve our service based on customer feedback.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Our Reach Section */}
+          <section className="w-full py-12 md:py-24 bg-gray-900">
+            <div className="container px-4 md:px-6">
+              <div className="grid gap-12 lg:grid-cols-2 items-center">
+                <div className="relative rounded-xl border-2 border-yellow-400 overflow-hidden aspect-video bg-gray-800">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Globe className="w-24 h-24 text-yellow-400 opacity-50" />
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl text-yellow-400">
+                    Global Reach, Local Focus
+                  </h2>
+                  <p className="text-gray-300 md:text-lg">
+                    Crisp TV serves customers across the globe, with viewers in over 50 countries enjoying our services daily. We understand the importance of local content, which is why we offer channels from various regions and in multiple languages.
+                  </p>
+                  <div className="grid grid-cols-2 gap-4 mt-6">
+                    <div className="bg-gray-800 p-4 rounded-lg text-center">
+                      <span className="text-3xl font-bold text-yellow-400">50+</span>
+                      <p className="text-gray-300">Countries Served</p>
+                    </div>
+                    <div className="bg-gray-800 p-4 rounded-lg text-center">
+                      <span className="text-3xl font-bold text-yellow-400">3,000+</span>
+                      <p className="text-gray-300">Channels Available</p>
+                    </div>
+                    <div className="bg-gray-800 p-4 rounded-lg text-center">
+                      <span className="text-3xl font-bold text-yellow-400">15+</span>
+                      <p className="text-gray-300">Languages</p>
+                    </div>
+                    <div className="bg-gray-800 p-4 rounded-lg text-center">
+                      <span className="text-3xl font-bold text-yellow-400">24/7</span>
+                      <p className="text-gray-300">Customer Support</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* CTA Section */}
+          <section className="w-full py-12 md:py-24 bg-gradient-to-t from-gray-900 to-black">
+            <div className="container px-4 md:px-6">
+              <div className="flex flex-col items-center justify-center text-center space-y-4">
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl text-yellow-400">
+                  Ready to Experience Crisp TV?
+                </h2>
+                <p className="max-w-[700px] text-gray-300 md:text-xl">
+                  Join thousands of satisfied customers enjoying premium IPTV service at affordable prices.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 mt-6">
+                  <Link href="/packages">
+                    <Button className="bg-yellow-400 text-black hover:bg-yellow-300 px-8 py-6 text-lg">
+                      View Packages
+                    </Button>
+                  </Link>
+                  <Link href="/support">
+                    <Button variant="outline" className="border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black px-8 py-6 text-lg">
+                      Contact Us
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </section>
         </main>
         <SiteFooter />
       </div>
     </>
   )
+}
