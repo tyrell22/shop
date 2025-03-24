@@ -1,5 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getProducts, createProduct } from "@/lib/product-service"
+import { getAuthUserId } from "@/lib/auth-utils"
+import { isAdmin } from "@/lib/admin-utils"
 
 export async function GET() {
   try {
@@ -16,6 +18,23 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if user is authenticated and is admin
+    const userId = await getAuthUserId(request)
+
+    console.log("User ID from auth:", userId)
+
+    if (!userId) {
+      return NextResponse.json({ success: false, message: "Not authenticated" }, { status: 401 })
+    }
+
+    const admin = await isAdmin(userId)
+
+    console.log("Is admin:", admin)
+
+    if (!admin) {
+      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 403 })
+    }
+
     // Get the request body
     const body = await request.text()
     console.log("Raw request body:", body)
