@@ -1,7 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { verify } from "jsonwebtoken"
 import { cookies } from "next/headers"
-import { isAdmin } from "@/lib/admin-utils"
 import { sendEmail } from "@/lib/email-service"
 import { jwtConfig } from "@/lib/config"
 
@@ -15,12 +14,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify the token
-    const decoded = verify(token, jwtConfig.secret) as { id: number; email: string; name: string }
+    const decoded = verify(token, jwtConfig.secret) as { 
+      id: number; 
+      email: string; 
+      name: string;
+      isAdmin?: boolean;
+    }
 
     // Check if user is admin
-    const admin = await isAdmin(decoded.id)
-
-    if (!admin) {
+    if (!decoded.isAdmin) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 403 })
     }
 

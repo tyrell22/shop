@@ -4,13 +4,6 @@ import { verify } from "jsonwebtoken"
 import { cookies } from "next/headers"
 import { jwtConfig } from "@/lib/config"
 
-// Helper function to check if user is admin
-async function isAdmin(userId: number): Promise<boolean> {
-  // In a real app, you would check if the user has admin role
-  // For this demo, we'll consider user with ID 1 as admin
-  return userId === 1
-}
-
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const userId = Number.parseInt(params.id)
@@ -27,12 +20,15 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     }
 
     // Verify the token
-    const decoded = verify(token, jwtConfig.secret) as { id: number; email: string; name: string }
+    const decoded = verify(token, jwtConfig.secret) as { 
+      id: number; 
+      email: string; 
+      name: string;
+      isAdmin?: boolean;
+    }
 
     // Check if user is admin
-    const admin = await isAdmin(decoded.id)
-
-    if (!admin) {
+    if (!decoded.isAdmin) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 403 })
     }
 
