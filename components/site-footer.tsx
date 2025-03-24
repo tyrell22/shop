@@ -21,38 +21,13 @@ export function SiteFooter() {
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="text-gray-300 hover:text-yellow-400">
+                <Link href="/support" className="text-gray-300 hover:text-yellow-400">
                   Contact
                 </Link>
               </li>
               <li>
-                <Link href="/terms" className="text-gray-300 hover:text-yellow-400">
-                  Terms
-                </Link>
-              </li>
-              <li>
-                <Link href="/privacy" className="text-gray-300 hover:text-yellow-400">
-                  Privacy
-                </Link>
-              </li>
-            </ul>
-          </div>
-          <div className="space-y-2">
-            <h4 className="text-base font-medium text-yellow-400">Support</h4>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link href="/faq" className="text-gray-300 hover:text-yellow-400">
-                  FAQ
-                </Link>
-              </li>
-              <li>
-                <Link href="/help" className="text-gray-300 hover:text-yellow-400">
-                  Help Center
-                </Link>
-              </li>
-              <li>
-                <Link href="/tutorials" className="text-gray-300 hover:text-yellow-400">
-                  Tutorials
+                <Link href="/terms-privacy" className="text-gray-300 hover:text-yellow-400">
+                  Terms & Privacy
                 </Link>
               </li>
             </ul>
@@ -63,7 +38,7 @@ export function SiteFooter() {
         <div className="container flex flex-col items-center justify-between gap-4 py-6 md:h-16 md:flex-row md:py-0">
           <p className="text-xs text-gray-400">© 2024 Crisp TV. All rights reserved.</p>
           <div className="flex items-center gap-4">
-            <Link href="#" className="text-gray-400 hover:text-yellow-400">
+            <Link href="/socials" className="text-gray-400 hover:text-yellow-400">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
@@ -80,7 +55,7 @@ export function SiteFooter() {
               </svg>
               <span className="sr-only">Facebook</span>
             </Link>
-            <Link href="#" className="text-gray-400 hover:text-yellow-400">
+            <Link href="/socials" className="text-gray-400 hover:text-yellow-400">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
@@ -97,7 +72,7 @@ export function SiteFooter() {
               </svg>
               <span className="sr-only">Twitter</span>
             </Link>
-            <Link href="#" className="text-gray-400 hover:text-yellow-400">
+            <Link href="/socials" className="text-gray-400 hover:text-yellow-400">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
@@ -122,4 +97,3 @@ export function SiteFooter() {
     </footer>
   )
 }
-
