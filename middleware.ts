@@ -20,6 +20,7 @@ export async function middleware(request: NextRequest) {
     path.startsWith("/packages") ||
     path.startsWith("/features") ||
     path.startsWith("/support") ||
+    path.startsWith("/public") ||
     path.startsWith("/_next")
 
   // If it's a public path, allow access
