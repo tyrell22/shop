@@ -92,4 +92,4 @@ export default function SocialsPage() {
               <div className="pt-6">
                 <p className="text-gray-300">
                   In the meantime, you can always reach us through our <Link href="/support" className="text-yellow-400 hover:underline">support page</Link>.
-                </p
+                </p>
