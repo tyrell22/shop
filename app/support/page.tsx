@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { useToast } from "@/components/ui/toast";
+import { useToast } from "@/components/ui/use-toast";
 import { Headphones } from "lucide-react";
 import { SEOMetadata } from "@/components/seo-metadata";
 import { generateFAQSchema } from "@/lib/structured-data";

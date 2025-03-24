@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { useToast } from "@/components/ui/toast"
+import { useToast } from "@/components/ui/use-toast"
 import { useRouter, useSearchParams } from "next/navigation"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"

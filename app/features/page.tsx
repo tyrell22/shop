@@ -12,7 +12,7 @@ import {
   Play, 
   Cloud, 
   Shield, 
-  Device, 
+  Smartphone, 
   Clock, 
   Check 
 } from "lucide-react";
@@ -81,7 +81,7 @@ export default function FeaturesPage() {
   const deviceFeatures = [
     { icon: <Monitor />, title: "Smart TVs", description: "Compatible with Samsung, LG, Sony, and other Smart TV brands" },
     { icon: <Play />, title: "Streaming Devices", description: "Works with Amazon Fire Stick, Roku, Apple TV, and Android TV boxes" },
-    { icon: <Device />, title: "Mobile Devices", description: "Available on iOS and Android smartphones and tablets" },
+    { icon: <Smartphone />, title: "Mobile Devices", description: "Available on iOS and Android smartphones and tablets" },
     { icon: <Globe />, title: "Web Browsers", description: "Watch directly in Chrome, Firefox, Safari, and other browsers" },
   ];
 
@@ -96,7 +96,7 @@ export default function FeaturesPage() {
     { icon: <Cloud />, title: "Cloud DVR", description: "Record your favorite shows to watch later" },
     { icon: <Zap />, title: "Low Latency", description: "Almost real-time streaming with minimal delays" },
     { icon: <Shield />, title: "Secure Connection", description: "Encrypted streaming for your privacy and security" },
-    { icon: <Check />, title: "Multi-Device", description: "Use on multiple devices with a single subscription" },
+    { icon: <Monitor />, title: "Multi-Device", description: "Use on multiple devices with a single subscription" },
   ];
 
   return (

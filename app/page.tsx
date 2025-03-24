@@ -6,7 +6,7 @@ import { Tv } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { useCart } from "@/lib/cart-context";
-import { useToast } from "@/components/ui/toast";
+import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { SEOMetadata } from "@/components/seo-metadata";
