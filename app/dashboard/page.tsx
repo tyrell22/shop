@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Package, CreditCard, Settings, User, Trash2, Eye } from "lucide-react";
+import { Package, CreditCard, Settings, User, Trash2, Eye, Copy } from "lucide-react"; // Add Copy icon
 import Link from "next/link";
 import { useToast } from "@/components/ui/use-toast";
 import { format } from "date-fns";
@@ -153,14 +153,6 @@ export default function DashboardPage() {
               <User className="h-4 w-4" />
               Profile
             </Link>
-            <Link href="/dashboard/billing" className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-400 hover:text-yellow-400">
-              <CreditCard className="h-4 w-4" />
-              Billing
-            </Link>
-            <Link href="/dashboard/settings" className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-400 hover:text-yellow-400">
-              <Settings className="h-4 w-4" />
-              Settings
-            </Link>
             <Button
               onClick={handleLogout}
               className="flex items-center gap-3 rounded-lg bg-yellow-400 text-black hover:bg-yellow-300 px-3 py-2"
@@ -299,15 +291,21 @@ export default function DashboardPage() {
                 <p><strong>End Date:</strong> {formatDate(selectedSubscription.end_date)}</p>
                 <p><strong>Status:</strong> {selectedSubscription.status}</p>
                 {selectedSubscription.m3u_url && (
-                  <p>
-                    <strong>M3U URL:</strong>{" "}
-                    <span
-                      className="text-yellow-400 hover:underline cursor-pointer break-all"
+                  <div className="flex items-start gap-2">
+                    <div>
+                      <strong>M3U URL:</strong>{" "}
+                      <span className="text-gray-300 break-all">{selectedSubscription.m3u_url}</span>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black"
                       onClick={() => handleCopyM3uUrl(selectedSubscription.m3u_url!)}
                     >
-                      {selectedSubscription.m3u_url}
-                    </span>
-                  </p>
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copy
+                    </Button>
+                  </div>
                 )}
               </div>
             )}
