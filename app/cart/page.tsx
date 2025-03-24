@@ -27,12 +27,16 @@ export default function CartPage() {
         const data = await response.json()
         setIsAuthenticated(data.success)
       } catch (error) {
+        console.error("Error checking authentication:", error)
         setIsAuthenticated(false)
       } finally {
         setIsLoading(false)
       }
     }
 
+    // Just set loading to false immediately to prevent redirections
+    setIsLoading(false)
+    // Then check auth status in background
     checkAuth()
   }, [])
 

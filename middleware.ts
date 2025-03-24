@@ -26,6 +26,7 @@ export async function middleware(request: NextRequest) {
     path === "/api/admin/login"; // Allow access to admin login
     path.startsWith("/checkout") ||
     path.startsWith("/api/checkout") ||
+    path.startsWith("/api/send-email") ||
     path.startsWith("/cart");
 
   // If it's a public path, allow access
