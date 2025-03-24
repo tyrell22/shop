@@ -5,11 +5,13 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Package, CreditCard, Settings, User, Trash2 } from "lucide-react"; // Add Trash2
+import { Package, CreditCard, Settings, User, Trash2, Eye } from "lucide-react"; // Add Eye icon
 import Link from "next/link";
 import { useToast } from "@/components/ui/use-toast";
 import { format } from "date-fns";
 import { SiteHeader } from "@/components/site-header";
+import * as Dialog from "@radix-ui/react-dialog"; // For modal
+import { X } from "lucide-react"; // For close button
 
 type UserType = {
   id: number;
@@ -25,6 +27,7 @@ type Subscription = {
   status: string;
   product_name: string;
   product_price: number;
+  m3u_url?: string; // Add m3u_url to type
 };
 
 export default function DashboardPage() {
@@ -32,6 +35,8 @@ export default function DashboardPage() {
   const [activeSubscriptions, setActiveSubscriptions] = useState<Subscription[]>([]);
   const [expiredSubscriptions, setExpiredSubscriptions] = useState<Subscription[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedSubscription, setSelectedSubscription] = useState<Subscription | null>(null); // For modal
+  const [dialogOpen, setDialogOpen] = useState(false); // For modal
   const router = useRouter();
   const { toast } = useToast();
 
@@ -141,11 +146,11 @@ export default function DashboardPage() {
               Settings
             </Link>
             <Button
-  onClick={handleLogout}
-  className="flex items-center gap-3 rounded-lg bg-yellow-400 text-black hover:bg-yellow-300 px-3 py-2"
->
-  Logout
-</Button>
+              onClick={handleLogout}
+              className="flex items-center gap-3 rounded-lg bg-yellow-400 text-black hover:bg-yellow-300 px-3 py-2"
+            >
+              Logout
+            </Button>
           </nav>
         </aside>
         <main className="flex w-full flex-col overflow-hidden p-4 md:p-0">
@@ -185,6 +190,18 @@ export default function DashboardPage() {
                               <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
                                 {subscription.status}
                               </span>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black"
+                                onClick={() => {
+                                  setSelectedSubscription(subscription);
+                                  setDialogOpen(true);
+                                }}
+                              >
+                                <Eye className="mr-2 h-4 w-4" />
+                                View Details
+                              </Button>
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -247,6 +264,49 @@ export default function DashboardPage() {
           </Tabs>
         </main>
       </div>
+
+      {/* Modal for Subscription Details */}
+      <Dialog.Root open={dialogOpen} onOpenChange={setDialogOpen}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 bg-black/50" />
+          <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gray-900 border-2 border-yellow-400 p-6 rounded-lg w-full max-w-md">
+            <Dialog.Title className="text-yellow-400 text-xl font-bold">Subscription Details</Dialog.Title>
+            <Dialog.Description className="text-gray-400 mt-2">
+              Details for Subscription #{selectedSubscription?.id}.
+            </Dialog.Description>
+            {selectedSubscription && (
+              <div className="mt-4 space-y-2 text-gray-300">
+                <p><strong>Subscription ID:</strong> #{selectedSubscription.id}</p>
+                <p><strong>Package:</strong> {selectedSubscription.product_name}</p>
+                <p><strong>Price:</strong> ${selectedSubscription.product_price.toFixed(2)}</p>
+                <p><strong>Start Date:</strong> {formatDate(selectedSubscription.start_date)}</p>
+                <p><strong>End Date:</strong> {formatDate(selectedSubscription.end_date)}</p>
+                <p><strong>Status:</strong> {selectedSubscription.status}</p>
+                {selectedSubscription.m3u_url && (
+                  <p>
+                    <strong>M3U URL:</strong>{" "}
+                    <a href={selectedSubscription.m3u_url} target="_blank" rel="noopener noreferrer" className="text-yellow-400 hover:underline">
+                      {selectedSubscription.m3u_url}
+                    </a>
+                  </p>
+                )}
+              </div>
+            )}
+            <div className="mt-6 flex justify-end">
+              <Dialog.Close asChild>
+                <Button variant="outline" className="border-gray-700 text-gray-400 hover:bg-gray-800">
+                  Close
+                </Button>
+              </Dialog.Close>
+            </div>
+            <Dialog.Close asChild>
+              <button className="absolute top-2 right-2 p-1 text-gray-400 hover:text-gray-200">
+                <X className="h-5 w-5" />
+              </button>
+            </Dialog.Close>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
     </div>
   );
 }
