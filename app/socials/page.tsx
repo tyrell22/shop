@@ -33,7 +33,7 @@ export default function SocialsPage() {
       </main>
       <SiteFooter />
     </div>
-              </div>
+              
               
               <div className="bg-gray-900 p-8 rounded-lg border-2 border-yellow-400 w-full">
                 <div className="flex items-center justify-center mb-6">
