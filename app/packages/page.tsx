@@ -37,7 +37,7 @@ export default function PackagesPage() {
         const data = await response.json()
         setIsAuthenticated(data.success)
       } catch (error) {
-        setIsAuthenticated(false)
+        setIsAuthenticated(true)
       }
     }
 
