@@ -23,11 +23,11 @@ export async function middleware(request: NextRequest) {
     path.startsWith("/support") ||
     path.startsWith("/public/images") ||
     path.startsWith("/_next") ||
-    path === "/api/admin/login"; // Allow access to admin login
+    path === "/api/admin/login" || // Allow access to admin login
     path.startsWith("/checkout") ||
     path.startsWith("/api/checkout") ||
-    path.startsWith("/api/send-email") ||
-    path.startsWith("/cart");
+    path.startsWith("/cart") ||
+    path.startsWith("/api/send-email");
 
   // If it's a public path, allow access
   if (isPublicPath) {
