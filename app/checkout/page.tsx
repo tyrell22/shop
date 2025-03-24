@@ -101,6 +101,7 @@ export default function CheckoutPage() {
         const data = await response.json()
         setIsAuthenticated(data.success)
       } catch (error) {
+        console.error("Error checking authentication:", error)
         setIsAuthenticated(false)
       }
     }
@@ -143,6 +144,7 @@ export default function CheckoutPage() {
       }
     }
 
+    // Set loading state to false after product fetch to prevent redirections
     checkAuth()
     fetchProduct()
   }, [productId, router])

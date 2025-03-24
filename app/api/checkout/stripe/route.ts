@@ -19,6 +19,8 @@ export async function POST(request: NextRequest) {
     
     // Get the request body
     const { productId, guestInfo } = await request.json()
+    
+    console.log("Checkout request received:", { productId, guestInfo, userId })
 
     if (!productId) {
       return NextResponse.json({ success: false, message: "Product ID is required" }, { status: 400 })

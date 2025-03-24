@@ -52,6 +52,8 @@ export default function CartPage() {
 
     // For simplicity, we'll just redirect to checkout with the first item
     // In a real app, you might want to handle multiple items differently
+    
+    // Navigate to the checkout page - this should work for both logged in and guest users
     router.push(`/checkout?productId=${items[0].product.id}`)
   }
 
