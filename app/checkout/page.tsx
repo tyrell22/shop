@@ -4,8 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { CreditCard, ArrowLeft, Loader2 } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { loadStripe } from "@stripe/stripe-js"
@@ -176,7 +175,6 @@ export default function CheckoutPage() {
                           : `${product.duration_days} days`}
                     </span>
                   </div>
-                  <Separator className="bg-gray-800" />
                   <div className="flex justify-between">
                     <span className="text-gray-300">Subtotal:</span>
                     <span className="font-medium text-white">${displayPrice}</span>
@@ -185,7 +183,6 @@ export default function CheckoutPage() {
                     <span className="text-gray-300">Tax:</span>
                     <span className="font-medium text-white">$0.00</span>
                   </div>
-                  <Separator className="bg-gray-800" />
                   <div className="flex justify-between">
                     <span className="text-gray-300">Total:</span>
                     <span className="font-bold text-xl text-yellow-400">${displayPrice}</span>
@@ -201,36 +198,6 @@ export default function CheckoutPage() {
                   <CardDescription className="text-gray-400">Secure payment processing by Stripe</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="rounded-md bg-gray-800 p-4">
-                    <h3 className="text-lg font-medium text-white mb-2">Package Features:</h3>
-                    <ul className="space-y-2">
-                      {Array.isArray(product.features) &&
-                        product.features.map((feature, index) => (
-                          <li key={index} className="flex items-center text-gray-300">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 20 20"
-                              fill="currentColor"
-                              className="w-5 h-5 mr-2 text-yellow-400"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                            {feature}
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                  <div className="rounded-md bg-yellow-400/10 p-4 border border-yellow-400/30">
-                    <p className="text-yellow-400 text-sm">
-                      You will be redirected to Stripe's secure payment page to complete your purchase.
-                    </p>
-                  </div>
-                </CardContent>
-                <CardFooter>
                   <Button
                     onClick={handleCheckout}
                     className="w-full bg-yellow-400 text-black hover:bg-yellow-300"
@@ -248,7 +215,13 @@ export default function CheckoutPage() {
                       </span>
                     )}
                   </Button>
-                </CardFooter>
+
+                  <div className="rounded-md bg-yellow-400/10 p-4 border border-yellow-400/30">
+                    <p className="text-yellow-400 text-sm">
+                      You will be redirected to Stripe's secure payment page to complete your purchase.
+                    </p>
+                  </div>
+                </CardContent>
               </Card>
             </div>
           </div>
@@ -257,4 +230,3 @@ export default function CheckoutPage() {
     </div>
   )
 }
-
