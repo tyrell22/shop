@@ -5,13 +5,13 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Package, CreditCard, Settings, User, Trash2, Eye } from "lucide-react"; // Add Eye icon
+import { Package, CreditCard, Settings, User, Trash2, Eye } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/components/ui/use-toast";
 import { format } from "date-fns";
 import { SiteHeader } from "@/components/site-header";
-import * as Dialog from "@radix-ui/react-dialog"; // For modal
-import { X } from "lucide-react"; // For close button
+import * as Dialog from "@radix-ui/react-dialog";
+import { X } from "lucide-react";
 
 type UserType = {
   id: number;
@@ -26,8 +26,8 @@ type Subscription = {
   end_date: string;
   status: string;
   product_name: string;
-  product_price: number;
-  m3u_url?: string; // Add m3u_url to type
+  product_price: number | string; // Allow string from DB
+  m3u_url?: string;
 };
 
 export default function DashboardPage() {
@@ -35,8 +35,8 @@ export default function DashboardPage() {
   const [activeSubscriptions, setActiveSubscriptions] = useState<Subscription[]>([]);
   const [expiredSubscriptions, setExpiredSubscriptions] = useState<Subscription[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedSubscription, setSelectedSubscription] = useState<Subscription | null>(null); // For modal
-  const [dialogOpen, setDialogOpen] = useState(false); // For modal
+  const [selectedSubscription, setSelectedSubscription] = useState<Subscription | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -278,7 +278,7 @@ export default function DashboardPage() {
               <div className="mt-4 space-y-2 text-gray-300">
                 <p><strong>Subscription ID:</strong> #{selectedSubscription.id}</p>
                 <p><strong>Package:</strong> {selectedSubscription.product_name}</p>
-                <p><strong>Price:</strong> ${selectedSubscription.product_price.toFixed(2)}</p>
+                <p><strong>Price:</strong> ${Number(selectedSubscription.product_price).toFixed(2)}</p>
                 <p><strong>Start Date:</strong> {formatDate(selectedSubscription.start_date)}</p>
                 <p><strong>End Date:</strong> {formatDate(selectedSubscription.end_date)}</p>
                 <p><strong>Status:</strong> {selectedSubscription.status}</p>
