@@ -1,26 +1,26 @@
-import sgMail from "@sendgrid/mail"
+import sgMail from "@sendgrid/mail";
 
 // Initialize SendGrid with API key
 if (process.env.SENDGRID_API_KEY) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 } else {
-  console.warn("SENDGRID_API_KEY is not set. Email functionality will not work.")
+  console.warn("SENDGRID_API_KEY is not set. Email functionality will not work.");
 }
 
 // Email template for order confirmation
 export const generateOrderConfirmationEmail = (
   customerName: string,
   orderDetails: {
-    orderId: number
-    productName: string
-    price: number
-    duration: number
-    startDate: Date
-    endDate: Date
+    orderId: number;
+    productName: string;
+    price: number;
+    duration: number;
+    startDate: Date;
+    endDate: Date;
   },
 ) => {
-  const startDateFormatted = new Date(orderDetails.startDate).toLocaleDateString()
-  const endDateFormatted = new Date(orderDetails.endDate).toLocaleDateString()
+  const startDateFormatted = new Date(orderDetails.startDate).toLocaleDateString();
+  const endDateFormatted = new Date(orderDetails.endDate).toLocaleDateString();
 
   return {
     subject: `Crisp TV - Order Confirmation #${orderDetails.orderId}`,
@@ -64,6 +64,10 @@ export const generateOrderConfirmationEmail = (
               border-radius: 5px;
               padding: 15px;
               margin: 20px 0;
+              color: #ffffff; /* Whiter text for better contrast */
+            }
+            .order-details p, .order-details td {
+              color: #ffffff; /* Ensure all text inside is white */
             }
             .order-summary {
               border-top: 1px solid #333;
@@ -148,7 +152,7 @@ export const generateOrderConfirmationEmail = (
               <p>Enjoy your premium IPTV experience!</p>
             </div>
             <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} Crisp TV. All rights reserved.</p>
+              <p>© ${new Date().getFullYear()} Crisp TV. All rights reserved.</p>
               <p>This email was sent to you because you made a purchase on our website.</p>
             </div>
           </div>
@@ -181,23 +185,23 @@ export const generateOrderConfirmationEmail = (
       © ${new Date().getFullYear()} Crisp TV. All rights reserved.
       This email was sent to you because you made a purchase on our website.
     `,
-  }
-}
+  };
+};
 
 // Email template for subscription expiration reminder
 export const generateSubscriptionExpirationEmail = (
   customerName: string,
   subscriptionDetails: {
-    subscriptionId: number
-    productName: string
-    endDate: Date
-    renewalLink: string
+    subscriptionId: number;
+    productName: string;
+    endDate: Date;
+    renewalLink: string;
   },
 ) => {
-  const endDateFormatted = new Date(subscriptionDetails.endDate).toLocaleDateString()
+  const endDateFormatted = new Date(subscriptionDetails.endDate).toLocaleDateString();
   const daysRemaining = Math.ceil(
     (new Date(subscriptionDetails.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24),
-  )
+  );
 
   return {
     subject: `Crisp TV - Your Subscription is Expiring Soon`,
@@ -241,6 +245,10 @@ export const generateSubscriptionExpirationEmail = (
               border-radius: 5px;
               padding: 15px;
               margin: 20px 0;
+              color: #ffffff; /* Whiter text for better contrast */
+            }
+            .subscription-details p {
+              color: #ffffff; /* Ensure all text inside is white */
             }
             .button {
               display: inline-block;
@@ -291,7 +299,7 @@ export const generateSubscriptionExpirationEmail = (
               <p>Thank you for choosing Crisp TV!</p>
             </div>
             <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} Crisp TV. All rights reserved.</p>
+              <p>© ${new Date().getFullYear()} Crisp TV. All rights reserved.</p>
               <p>This email was sent to you because you have an active subscription with us.</p>
             </div>
           </div>
@@ -320,8 +328,8 @@ export const generateSubscriptionExpirationEmail = (
       © ${new Date().getFullYear()} Crisp TV. All rights reserved.
       This email was sent to you because you have an active subscription with us.
     `,
-  }
-}
+  };
+};
 
 // Email template for welcome email
 export const generateWelcomeEmail = (customerName: string) => {
@@ -367,6 +375,10 @@ export const generateWelcomeEmail = (customerName: string) => {
               border-radius: 5px;
               padding: 15px;
               margin: 20px 0;
+              color: #ffffff; /* Whiter text for better contrast */
+            }
+            .feature-box li {
+              color: #ffffff; /* Ensure list items are white */
             }
             .button {
               display: inline-block;
@@ -434,7 +446,7 @@ export const generateWelcomeEmail = (customerName: string) => {
               <p>We hope you enjoy your Crisp TV experience!</p>
             </div>
             <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} Crisp TV. All rights reserved.</p>
+              <p>© ${new Date().getFullYear()} Crisp TV. All rights reserved.</p>
               <p>This email was sent to you because you created an account on our website.</p>
             </div>
           </div>
@@ -459,17 +471,17 @@ export const generateWelcomeEmail = (customerName: string) => {
       To start enjoying our premium IPTV service, browse our packages and subscribe today:
       ${process.env.NEXT_PUBLIC_APP_URL || "https://your-iptv-site.com"}/packages
       
-      If you have any questions or need assistance, our support team is always ready to help.
+      If you have any questions or need assistance, our support team is here to help.
       
       We hope you enjoy your Crisp TV experience!
       
       © ${new Date().getFullYear()} Crisp TV. All rights reserved.
       This email was sent to you because you created an account on our website.
     `,
-  }
-}
+  };
+};
 
-// New generateM3uUpdateEmail function
+// Email template for M3U update
 export const generateM3uUpdateEmail = (
   customerName: string,
   subscriptionDetails: {
@@ -519,6 +531,17 @@ export const generateM3uUpdateEmail = (
             .content {
               padding: 20px 0;
             }
+            .details {
+              background-color: #111111;
+              border: 1px solid #333;
+              border-radius: 5px;
+              padding: 15px;
+              margin: 20px 0;
+              color: #ffffff; /* Whiter text for better contrast */
+            }
+            .details p {
+              color: #ffffff; /* Ensure all text inside is white */
+            }
             .footer {
               text-align: center;
               padding: 20px 0;
@@ -528,13 +551,6 @@ export const generateM3uUpdateEmail = (
             }
             h1 {
               color: #FACC15;
-            }
-            .details {
-              background-color: #111111;
-              border: 1px solid #333;
-              border-radius: 5px;
-              padding: 15px;
-              margin: 20px 0;
             }
           </style>
         </head>
@@ -573,21 +589,21 @@ export const generateM3uUpdateEmail = (
       Use the M3U URL above to access your IPTV streams. Contact support for issues.
       © ${new Date().getFullYear()} Crisp TV. All rights reserved.
     `,
-  }
-}
+  };
+};
 
 // Function to send email
 export const sendEmail = async (
   to: string,
   templateData: {
-    subject: string
-    html: string
-    text: string
+    subject: string;
+    html: string;
+    text: string;
   },
 ) => {
   if (!process.env.SENDGRID_API_KEY) {
-    console.warn("SENDGRID_API_KEY is not set. Email not sent.")
-    return { success: false, message: "Email service not configured" }
+    console.warn("SENDGRID_API_KEY is not set. Email not sent.");
+    return { success: false, message: "Email service not configured" };
   }
 
   const msg = {
@@ -596,18 +612,17 @@ export const sendEmail = async (
     subject: templateData.subject,
     text: templateData.text,
     html: templateData.html,
-  }
+  };
 
   try {
-    await sgMail.send(msg)
-    return { success: true }
+    await sgMail.send(msg);
+    return { success: true };
   } catch (error) {
-    console.error("Error sending email:", error)
+    console.error("Error sending email:", error);
     return {
       success: false,
       message: error.message || "Failed to send email",
       error,
-    }
+    };
   }
-}
-
+};
