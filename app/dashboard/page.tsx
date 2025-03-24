@@ -26,7 +26,7 @@ type Subscription = {
   end_date: string;
   status: string;
   product_name: string;
-  product_price: number | string; // Allow string from DB
+  product_price: number | string;
   m3u_url?: string;
 };
 
@@ -109,6 +109,22 @@ export default function DashboardPage() {
       console.error("Error canceling subscription:", error);
       toast({ title: "Error", description: "Failed to cancel subscription", variant: "destructive" });
     }
+  };
+
+  const handleCopyM3uUrl = (url: string) => {
+    navigator.clipboard.writeText(url).then(() => {
+      toast({
+        title: "Copied!",
+        description: "M3U URL has been copied to your clipboard.",
+      });
+    }).catch((err) => {
+      console.error("Failed to copy M3U URL:", err);
+      toast({
+        title: "Error",
+        description: "Failed to copy M3U URL. Please copy it manually.",
+        variant: "destructive",
+      });
+    });
   };
 
   const formatDate = (dateString: string) => {
@@ -285,9 +301,12 @@ export default function DashboardPage() {
                 {selectedSubscription.m3u_url && (
                   <p>
                     <strong>M3U URL:</strong>{" "}
-                    <a href={selectedSubscription.m3u_url} target="_blank" rel="noopener noreferrer" className="text-yellow-400 hover:underline">
+                    <span
+                      className="text-yellow-400 hover:underline cursor-pointer break-all"
+                      onClick={() => handleCopyM3uUrl(selectedSubscription.m3u_url!)}
+                    >
                       {selectedSubscription.m3u_url}
-                    </a>
+                    </span>
                   </p>
                 )}
               </div>
