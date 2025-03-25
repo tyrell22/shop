@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getProductById, updateProduct, deleteProduct } from "@/lib/product-service"
+import { getProducts, createProduct } from "@/lib/product-service"
 import { verify } from "jsonwebtoken"
 import { cookies } from "next/headers"
 import { jwtConfig } from "@/lib/config"
@@ -74,6 +74,14 @@ export async function POST(request: NextRequest) {
         Number(data.price),
         duration_days,
         features,
+        {
+          meta_title: data.meta_title,
+          meta_description: data.meta_description,
+          focus_keywords: data.focus_keywords,
+          seo_slug: data.seo_slug,
+          canonical_url: data.canonical_url,
+          og_image_url: data.og_image_url
+        }
       )
 
       console.log("Product created:", product)
