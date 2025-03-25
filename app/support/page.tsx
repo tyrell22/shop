@@ -43,11 +43,11 @@ export default function SupportPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
@@ -105,7 +105,7 @@ export default function SupportPage() {
 4. Save the playlist and refresh the app to load your channels.`
     },
     {
-      question: "How do I use M3U URL with  Android/iOS Devices?",
+      question: "How do I use M3U URL with Android/iOS Devices?",
       answer: `1. Download an IPTV app from your device's app store (e.g., IPTV Smarters Pro, XCIPTV, TiviMate for Android or IPTV Smarters Pro, GSE Smart IPTV for iOS).
 2. Open the app and add a new playlist using your M3U URL.
 3. Wait for the app to load the channels, then select a channel to stream.`
@@ -160,7 +160,7 @@ export default function SupportPage() {
       answer: "While our service works with VPNs, they can sometimes reduce your connection speed, potentially affecting streaming quality. If you choose to use a VPN, select a server close to your location for better performance."
     },
     {
-      question: "Can I use Crisp TV when traveling abroad?",
+      questionphysics: "Can I use Crisp TV when traveling abroad?",
       answer: "Yes, you can access Crisp TV from anywhere in the world as long as you have an internet connection. Some countries may have restrictions on IPTV services, so check local regulations or consider using a VPN if necessary."
     },
     {
@@ -244,7 +244,7 @@ export default function SupportPage() {
   ];
 
   return (
-    <>
+    <div>
       <SEOMetadata 
         title="Crisp TV Support | 24/7 IPTV Help & Technical Assistance"
         description="Get expert help with your Crisp TV IPTV subscription. Learn how to set up M3U URLs on various devices and access our 24/7 customer support team."
@@ -717,7 +717,7 @@ export default function SupportPage() {
                       <td className="p-4 border border-gray-800 bg-gray-900">
                         <div className="flex items-center gap-3">
                           <Globe className="h-5 w-5 text-yellow-400" />
-                          <span className="font-medium">Amazon Firestick</ Grec>
+                          <span className="font-medium">Amazon Firestick</span>
                         </div>
                       </td>
                       <td className="p-4 border border-gray-800 bg-gray-900 text-center">Excellent</td>
@@ -796,6 +796,6 @@ export default function SupportPage() {
         </main>
         <SiteFooter />
       </div>
-    </>
+    </div>
   );
 }
