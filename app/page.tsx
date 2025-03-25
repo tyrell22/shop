@@ -155,7 +155,7 @@ export default function Home() {
       <SEOMetadata 
         title="Crisp TV - Best Premium IPTV Service | Live TV Channels Worldwide"
         description="Crisp TV offers premium IPTV service with thousands of live TV channels worldwide. High-definition streaming, affordable packages, and free trial available."
-        keywords={["iptv service", "premium iptv", "live tv channels", "streaming service", "hd channels", "sports channels", "international tv"]}
+        keywords={["iptv service", "premium iptv", "cheap IPTV", "streaming service", "hd channels", "sports channels", "best IPTV"]}
         structuredData={combinedStructuredData}
       />
 
