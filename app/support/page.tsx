@@ -771,7 +771,7 @@ export default function SupportPage() {
             </div>
           </section>
 
-          {/* Live Support CTA */}
+          {{/* Live Support CTA */}
           <section className="w-full py-16 md:py-24 bg-gradient-to-t from-gray-900 to-black">
             <div className="container px-4 md:px-6">
               <div className="flex flex-col items-center justify-center text-center space-y-6">
@@ -797,3 +797,8 @@ export default function SupportPage() {
               </div>
             </div>
           </section>
+        </main>
+        <SiteFooter />
+      </div>
+    </>
+  );
