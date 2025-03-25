@@ -1,7 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getProducts, createProduct } from "@/lib/product-service"
-import { getAuthUserId } from "@/lib/auth-utils"
-import { isAdmin } from "@/lib/admin-utils"
+import { getProductById, updateProduct, deleteProduct } from "@/lib/product-service"
+import { verify } from "jsonwebtoken"
+import { cookies } from "next/headers"
+import { jwtConfig } from "@/lib/config"
 
 export async function GET() {
   try {
