@@ -1,7 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getProductById, updateProduct, deleteProduct } from "@/lib/product-service"
-import { getAuthUserId } from "@/lib/auth-utils"
-import { isAdmin } from "@/lib/admin-utils"
+import { verify } from "jsonwebtoken"
+import { cookies } from "next/headers"
+import { jwtConfig } from "@/lib/config"
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -31,18 +32,27 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   try {
     const productId = Number.parseInt(params.id)
 
-  if (isNaN(productId)) {
+    if (isNaN(productId)) {
       return NextResponse.json({ success: false, message: "Invalid product ID" }, { status: 400 })
     }
 
-    // Check if user is authenticated and is admin
-    const userId = await getAuthUserId(request)
-    if (!userId) {
+    // Get the token from cookies
+    const token = cookies().get(jwtConfig.cookieName)?.value
+
+    if (!token) {
       return NextResponse.json({ success: false, message: "Not authenticated" }, { status: 401 })
     }
 
-    const admin = await isAdmin(userId)
-    if (!admin) {
+    // Verify the token
+    const decoded = verify(token, jwtConfig.secret) as { 
+      id: number; 
+      email: string; 
+      name: string;
+      isAdmin?: boolean;
+    }
+
+    // Check if user is admin
+    if (!decoded.isAdmin) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 403 })
     }
 
@@ -54,7 +64,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       name: data.name,
       description: data.description,
       price: data.price !== undefined ? Number(data.price) : undefined,
-      duration_days: data.duration_days !== undefined ? Number(data.duration_days) : undefined, features: data.features,
+      duration_days: data.duration_days !== undefined ? Number(data.duration_days) : undefined,
+      features: data.features,
       meta_title: data.meta_title,
       meta_description: data.meta_description,
       focus_keywords: data.focus_keywords,
@@ -85,13 +96,23 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json({ success: false, message: "Invalid product ID" }, { status: 400 })
     }
 
-    // Check if user is authenticated and is admin
-    const userId = await getAuthUserId(request)
-    if (!userId) {
+    // Get the token from cookies
+    const token = cookies().get(jwtConfig.cookieName)?.value
+
+    if (!token) {
       return NextResponse.json({ success: false, message: "Not authenticated" }, { status: 401 })
     }
-    const admin = await isAdmin(userId)
-    if (!admin) {
+
+    // Verify the token
+    const decoded = verify(token, jwtConfig.secret) as { 
+      id: number; 
+      email: string; 
+      name: string;
+      isAdmin?: boolean;
+    }
+
+    // Check if user is admin
+    if (!decoded.isAdmin) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 403 })
     }
 
@@ -111,4 +132,3 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     )
   }
 }
-      
