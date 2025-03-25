@@ -38,6 +38,7 @@ export async function createProduct(
     price,
     duration_days,
     features,
+    seoData,
   })
 
   try {
@@ -45,13 +46,54 @@ export async function createProduct(
     const featuresValue =
       Array.isArray(features) && features.length > 0 ? JSON.stringify(features) : JSON.stringify(["Basic Package"])
 
-    // Use a simplified query without SEO fields
-    const result = await query(
-      `INSERT INTO products (
-        name, description, price, duration_days, features
-      ) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [name, description, price, duration_days, featuresValue],
-    )
+    // Prepare columns and values arrays
+    const columns = ["name", "description", "price", "duration_days", "features"]
+    const values = [name, description, price, duration_days, featuresValue]
+    const placeholders = ["$1", "$2", "$3", "$4", "$5"]
+    let paramIndex = 6
+
+    // Add SEO fields if they exist
+    if (seoData) {
+      if (seoData.meta_title !== undefined) {
+        columns.push("meta_title")
+        values.push(seoData.meta_title)
+        placeholders.push(`$${paramIndex++}`)
+      }
+      if (seoData.meta_description !== undefined) {
+        columns.push("meta_description")
+        values.push(seoData.meta_description)
+        placeholders.push(`$${paramIndex++}`)
+      }
+      if (seoData.focus_keywords !== undefined) {
+        columns.push("focus_keywords")
+        values.push(JSON.stringify(seoData.focus_keywords))
+        placeholders.push(`$${paramIndex++}`)
+      }
+      if (seoData.seo_slug !== undefined) {
+        columns.push("seo_slug")
+        values.push(seoData.seo_slug)
+        placeholders.push(`$${paramIndex++}`)
+      }
+      if (seoData.canonical_url !== undefined) {
+        columns.push("canonical_url")
+        values.push(seoData.canonical_url)
+        placeholders.push(`$${paramIndex++}`)
+      }
+      if (seoData.og_image_url !== undefined) {
+        columns.push("og_image_url")
+        values.push(seoData.og_image_url)
+        placeholders.push(`$${paramIndex++}`)
+      }
+    }
+
+    // Construct the SQL query
+    const sql = `
+      INSERT INTO products (${columns.join(", ")})
+      VALUES (${placeholders.join(", ")})
+      RETURNING *
+    `
+
+    const result = await query(sql, values)
 
     console.log("Product created in database:", result.rows[0])
     return processProduct(result.rows[0])
@@ -125,8 +167,31 @@ export async function updateProduct(
     values.push(JSON.stringify(data.features))
   }
 
-  // Skip SEO fields for now since they don't exist in the database
-  // We'll add them back when the database schema is updated
+  // Add SEO fields to update query
+  if (data.meta_title !== undefined) {
+    updates.push(`meta_title = $${paramIndex++}`)
+    values.push(data.meta_title)
+  }
+  if (data.meta_description !== undefined) {
+    updates.push(`meta_description = $${paramIndex++}`)
+    values.push(data.meta_description)
+  }
+  if (data.focus_keywords !== undefined) {
+    updates.push(`focus_keywords = $${paramIndex++}`)
+    values.push(JSON.stringify(data.focus_keywords))
+  }
+  if (data.seo_slug !== undefined) {
+    updates.push(`seo_slug = $${paramIndex++}`)
+    values.push(data.seo_slug)
+  }
+  if (data.canonical_url !== undefined) {
+    updates.push(`canonical_url = $${paramIndex++}`)
+    values.push(data.canonical_url)
+  }
+  if (data.og_image_url !== undefined) {
+    updates.push(`og_image_url = $${paramIndex++}`)
+    values.push(data.og_image_url)
+  }
 
   // Add updated_at timestamp
   updates.push(`updated_at = CURRENT_TIMESTAMP`)
@@ -191,4 +256,3 @@ function processProduct(product: any): Product {
     focus_keywords: focusKeywords,
   }
 }
-
