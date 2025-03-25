@@ -18,20 +18,23 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    // Check if user is authenticated and is admin
-    const userId = await getAuthUserId(request)
+    // Get the token from cookies
+    const token = cookies().get(jwtConfig.cookieName)?.value
 
-    console.log("User ID from auth:", userId)
-
-    if (!userId) {
+    if (!token) {
       return NextResponse.json({ success: false, message: "Not authenticated" }, { status: 401 })
     }
 
-    const admin = await isAdmin(userId)
+    // Verify the token
+    const decoded = verify(token, jwtConfig.secret) as { 
+      id: number; 
+      email: string; 
+      name: string;
+      isAdmin?: boolean;
+    }
 
-    console.log("Is admin:", admin)
-
-    if (!admin) {
+    // Check if user is admin
+    if (!decoded.isAdmin) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 403 })
     }
 
