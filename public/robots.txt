@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+Allow: /about
+Allow: /packages
+Allow: /features
+Allow: /support
+Allow: /terms-privacy
+Allow: /login
+Allow: /register
+Allow: /images/
+Allow: /public/
+Disallow: /admin/
+Disallow: /admin-login
+Disallow: /dashboard/
+Disallow: /api/
+
+Sitemap: https://crispiptv.com/sitemap.xml
